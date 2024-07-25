@@ -24,5 +24,10 @@ func routes(app *config.AppConfig) http.Handler{
 	mux.Get("/", handler.Repo.Home)
 	mux.Get("/about", handler.Repo.About)
 	
+	//建立一個讀取靜態文件的路徑
+	fileServer := http.FileServer(http.Dir("./static/"))
+	//讓mux可以處理static裡的所有文件
+	mux.Handle("/static/*",http.StripPrefix("/static",fileServer))
+
 	return mux
 }
