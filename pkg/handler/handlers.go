@@ -26,7 +26,6 @@ func NewRepo(a *config.AppConfig) *Repository{
 //NewHandlers set the repository for the handlers
 func NewHandlers(r *Repository){
 	Repo = r
-
 }
 
 
@@ -71,3 +70,21 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 		StringMap: stringMap,
 	})
 }
+//make-reservation
+func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
+	render.RenderTemplate(w,"make-reservationpage.tmpl",&models.TemplateData{})
+}
+//General
+func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){
+	render.RenderTemplate(w,"generalspage.tmpl",&models.TemplateData{})
+}	
+//Majors render
+func (m *Repository) Majors(w http.ResponseWriter,r *http.Request){
+	render.RenderTemplate(w,"majorspage.tmpl",&models.TemplateData{})
+}	
+
+//Availability render search-availability的頁面
+func (m *Repository) Availability(w http.ResponseWriter,r *http.Request){
+	render.RenderTemplate(w,"search-availabilitypage.tmpl",&models.TemplateData{})
+}	
+

@@ -23,7 +23,10 @@ func routes(app *config.AppConfig) http.Handler{
 	//處理get request
 	mux.Get("/", handler.Repo.Home)
 	mux.Get("/about", handler.Repo.About)
-	
+	mux.Get("/generals-quarters",handler.Repo.Generals)
+	mux.Get("/majors-suite",handler.Repo.Majors)
+	mux.Get("/make-reservation",handler.Repo.Reservation)
+	mux.Get("/search-availability", handler.Repo.Availability)
 	//建立一個讀取靜態文件的路徑
 	fileServer := http.FileServer(http.Dir("./static/"))
 	//讓mux可以處理static裡的所有文件
