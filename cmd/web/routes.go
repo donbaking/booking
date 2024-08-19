@@ -27,6 +27,7 @@ func routes(app *config.AppConfig) http.Handler{
 	mux.Get("/majors-suite",handler.Repo.Majors)
 	mux.Get("/make-reservation",handler.Repo.Reservation)
 	mux.Get("/search-availability", handler.Repo.Availability)
+	mux.Get("/contact", handler.Repo.Contact)
 	//建立一個讀取靜態文件的路徑
 	fileServer := http.FileServer(http.Dir("./static/"))
 	//讓mux可以處理static裡的所有文件
