@@ -9,6 +9,7 @@ import (
 
 	"github.com/donbaking/booking/pkg/config"
 	"github.com/donbaking/booking/pkg/models"
+	"github.com/justinas/nosurf"
 )
 
 var app *config.AppConfig
@@ -18,13 +19,16 @@ func  NewTemplates(a *config.AppConfig){
 }
 
 //AddDefaultData 用在如果要在每個頁面加上相同資料時可以使用
-func AddDefaultData(td *models.TemplateData) *models.TemplateData{
+func AddDefaultData(td *models.TemplateData,r *http.Request) *models.TemplateData{
+	//讓頁面獲得CSTF的token,從nosurf package拿token 
+	td.CSRFToken = nosurf.Token(r)
+	
 	return td
 }
 
 
 // 渲染前端用的Func 將頁面名稱傳入函式後渲染指定的html頁面
-func RenderTemplate(w http.ResponseWriter, tmpl string,td *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *models.TemplateData) {
 	var tempcache map[string]*template.Template
 	
 	//
@@ -43,7 +47,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string,td *models.TemplateData) 
 
 	buf := new(bytes.Buffer)
 
-	td = AddDefaultData(td)
+	td = AddDefaultData(td , r)
 	
     _ = t.Execute(buf,td)
 	//render the template

@@ -44,7 +44,7 @@ func (m *Repository)Home(w http.ResponseWriter,r *http.Request){
 	counter++
 	fmt.Println(counter)
 	fmt.Println("render homepage")
-	render.RenderTemplate(w,"homepage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w , r , "homepage.tmpl",&models.TemplateData{})
 }
 //About是處理about page的handler用一個接收器來接收repo
 func (m *Repository)About(w http.ResponseWriter,r *http.Request){
@@ -65,30 +65,35 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 	counter++
 	fmt.Println(counter)
 	fmt.Println("render about page")
-	render.RenderTemplate(w,"aboutpage.tmpl",&models.TemplateData{
+	render.RenderTemplate(w, r ,"aboutpage.tmpl",&models.TemplateData{
 		//在這裡將stringMap的值丟入templateData
 		StringMap: stringMap,
 	})
 }
 //make-reservation
 func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w,"make-reservationpage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{})
 }
 //General
 func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w,"generalspage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w, r ,"generalspage.tmpl",&models.TemplateData{})
 }	
 //Majors render
 func (m *Repository) Majors(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w,"majorspage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w, r ,"majorspage.tmpl",&models.TemplateData{})
 }	
 
 //Availability render search-availability的頁面
 func (m *Repository) Availability(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w,"search-availabilitypage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w, r ,"search-availabilitypage.tmpl",&models.TemplateData{})
+}	
+//POSTreq Availability render search-availability的頁面
+func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
+	//convert string to slice of bytes
+	w.Write([]byte("Posted to search-availability"))
 }	
 //Contact render 聯絡人的頁面
 func (m *Repository) Contact(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w,"contactpage.tmpl",&models.TemplateData{})
+	render.RenderTemplate(w, r ,"contactpage.tmpl",&models.TemplateData{})
 }	
 
