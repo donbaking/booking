@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/donbaking/booking/pkg/config"
-	"github.com/donbaking/booking/pkg/models"
+	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/models"
 	"github.com/justinas/nosurf"
 )
 

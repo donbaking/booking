@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/donbaking/booking/pkg/config"
-	"github.com/donbaking/booking/pkg/models"
-	"github.com/donbaking/booking/pkg/render"
+	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/models"
+	"github.com/donbaking/booking/internal/render"
 )
 
 //聲明變數repo
