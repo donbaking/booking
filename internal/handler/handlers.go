@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/forms"
 	"github.com/donbaking/booking/internal/models"
 	"github.com/donbaking/booking/internal/render"
 )
@@ -75,6 +76,13 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 //make-reservation
 func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{})
+}
+
+//Post req make-reservation post a reservation form
+func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
+	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
+		Form: forms.New(nil),
+	})
 }
 //General
 func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){

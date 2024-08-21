@@ -1,5 +1,7 @@
 package models
 
+import "github.com/donbaking/booking/internal/forms"
+
 //建立一個TemplateData的 struct用來接收前端給的資料或是把資料給前端
 type TemplateData struct{
 	// StringMap is a map with string keys and string values
@@ -16,4 +18,6 @@ type TemplateData struct{
 	Flash string
 	Warning string
 	Error string
+	//增加Form data type
+	Form *forms.Form
 }
