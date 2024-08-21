@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/donbaking/booking/pkg/config"
@@ -89,8 +91,34 @@ func (m *Repository) Availability(w http.ResponseWriter,r *http.Request){
 }	
 //POSTreq Availability render search-availability的頁面
 func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
+	//接收從表單傳來的兩個數值,by search-availability two inputs,接收的資料型態為字串
+	start:= r.Form.Get(("start"))
+	end:= r.Form.Get(("end"))
+	
 	//convert string to slice of bytes
-	w.Write([]byte("Posted to search-availability"))
+	w.Write([]byte(fmt.Sprintf("入住日期:%s 退房日期:%s",start,end)))
+}
+
+type jsonResponse struct{
+	//大寫開頭
+    Message string `json:"message"`
+	Ok bool `json:"ok"`
+}
+func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request){
+	//創建一個json reponse 物件
+	resp := jsonResponse{
+		Ok : false,
+		Message: "Available",
+	}
+	//將json格式化
+	out,err := json.MarshalIndent(resp,"","     ")
+
+	if err !=nil{
+		log.Println(err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+
 }	
 //Contact render 聯絡人的頁面
 func (m *Repository) Contact(w http.ResponseWriter,r *http.Request){
