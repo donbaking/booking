@@ -1,0 +1,36 @@
+{{template "base" .}} {{define "content"}}
+{{$res := index .Data "reservation"}}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1 class="mt-5">預約已提交</h1>
+      <hr />
+
+      <table class="table table-striped">
+        <thead></thead>
+        <tbody>
+          <tr>
+            <td>姓名:</td>
+            <td>{{ $res.FirstName }} {{ $res.LastName }}</td>
+          </tr>
+          <tr>
+            <td>入住時間:</td>
+          </tr>
+          <tr>
+            <td>退房時間:</td>
+          </tr>
+          <tr>
+            <td>電子郵件:</td>
+            <td>{{ $res.Email }}</td>
+          </tr>
+          <tr>
+            <td>電話:</td>
+            <td>{{ $res.Phone }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{ end }}

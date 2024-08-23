@@ -1,12 +1,14 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/models"
 	"github.com/donbaking/booking/internal/render"
 
 	"github.com/donbaking/booking/internal/handler"
@@ -22,7 +24,8 @@ var app config.AppConfig
 var session *scs.SessionManager
 
 func main() {
-	
+	//put something in the session
+	gob.Register(models.Reservation{})
 
 	//如果結束開發要進行商業部屬時這個變數改變
 	app.Inproduction = false

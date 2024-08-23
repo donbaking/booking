@@ -118,7 +118,10 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		})
 		return
 	}
-	
+	//將物件資料用session方式傳到模板再讓另一個後端邏輯讀取
+	m.App.Session.Put(r.Context(),"reservation",reservation)
+	//每一次收到post之後都要重新導向用戶到其他頁面才不會收到重複的post
+	http.Redirect(w,r,"/reservation-summary",http.StatusSeeOther)
 }
 //General
 func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){
@@ -168,4 +171,27 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 func (m *Repository) Contact(w http.ResponseWriter,r *http.Request){
 	render.RenderTemplate(w, r ,"contactpage.tmpl",&models.TemplateData{})
 }	
+
+//
+func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
+	//從session提取資料
+	reservation, ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
+	
+	if !ok {
+		log.Println("canoot get seesion object")
+		//用seesion傳遞錯誤訊息
+		m.App.Session.Put(r.Context(),"error","Can't get reservation from session")
+		//將用戶Redirect至首頁
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		return
+	}
+	//將post傳來的資料從session中釋放
+	m.App.Session.Remove(r.Context(),"reservation")
+
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+	render.RenderTemplate(w, r ,"reservation-summarypage.tmpl",&models.TemplateData{
+		Data :data,
+	})
+}
 

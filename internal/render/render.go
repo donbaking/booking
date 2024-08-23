@@ -20,6 +20,11 @@ func  NewTemplates(a *config.AppConfig){
 
 //AddDefaultData 用在如果要在每個頁面加上相同資料時可以使用
 func AddDefaultData(td *models.TemplateData,r *http.Request) *models.TemplateData{
+	//用seesion讓頁面獲得Flash
+	td.Flash = app.Session.PopString(r.Context(),"flash")
+	td.Error = app.Session.PopString(r.Context(),"error")
+	td.Warning = app.Session.PopString(r.Context(),"warning")
+	
 	//讓頁面獲得CSTF的token,從nosurf package拿token 
 	td.CSRFToken = nosurf.Token(r)
 	
