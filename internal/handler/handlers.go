@@ -75,14 +75,50 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 }
 //make-reservation
 func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{})
+	//用get req第一次到make-reservation頁面時會丟一個空的表單出來
+	var emptyReservation models.Reservation
+	data := make(map[string]interface{})
+	data["reservation"] = emptyReservation
+
+	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
 }
 
 //Post req make-reservation post a reservation form
 func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
-		Form: forms.New(nil),
-	})
+	//parseform 	
+	err := r.ParseForm()
+	if err != nil{
+		log.Println(err)
+		return
+	}
+	//四個數據需要處理 in make-reservation form 
+	reservation := models.Reservation{
+		FirstName: r.Form.Get("first_name"),
+		LastName: r.Form.Get("last_name"),
+		Phone: r.Form.Get("phone"),
+		Email: r.Form.Get("email"),
+	}
+	
+	form := forms.New(r.PostForm)
+	//Required forms data
+	form.Required("first_name", "last_name", "phone", "email")
+	form.MinLength("first_name",3,r)
+	form.Isemail("email")
+
+	if !form.Valid() {
+		//先將form的內容儲存起來
+		data := make(map[string]interface{})
+		data["reservation"] = reservation
+		render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
+	
 }
 //General
 func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){

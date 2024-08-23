@@ -1,5 +1,6 @@
 package forms
 
+//用slice方式儲存錯誤因為有可能不只一個錯誤訊息
 type errors map[string][]string
 
 // Add func增加error message
