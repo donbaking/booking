@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -11,8 +12,12 @@ import (
 	"github.com/donbaking/booking/internal/models"
 	"github.com/justinas/nosurf"
 )
+var functions = template.FuncMap{}
 
 var app *config.AppConfig
+//建立templates的path,提供給測試用
+var pathToTemplates = "./templates"
+
 //NewTemplates 從template package 設置config
 func  NewTemplates(a *config.AppConfig){
 	app = a
@@ -67,7 +72,7 @@ func CreateTemplateCache() (map[string]*template.Template,error) {
 	//創建一個空的map 在後面加上一個{}代表為空
 	myCache := map[string]*template.Template{}
 	//從templates資料夾中取得所有資料
-	pages , err := filepath.Glob("./templates/*page.tmpl")
+	pages , err := filepath.Glob(fmt.Sprintf("%s/*page.tmpl",pathToTemplates))
 	if err!= nil {
 		return myCache,err
 	}
@@ -75,18 +80,18 @@ func CreateTemplateCache() (map[string]*template.Template,error) {
 	for _,page := range pages {
 		//name會取得tmpL的檔名
 		name := filepath.Base(page)
-        ts, err := template.New(name).ParseFiles(page)
+        ts, err := template.New(name).Funcs(functions).ParseFiles(page)
         if err!= nil {
             return myCache,err
         }
 		
-		matches ,err := filepath.Glob("./templates/*layout.tmpl")
+		matches ,err := filepath.Glob(fmt.Sprintf("%s/*layout.tmpl",pathToTemplates))
 		if err!=nil{
 			return myCache ,err
 		}
 		
 		if len(matches)>0{
-			ts,err = ts.ParseGlob("./templates/*layout.tmpl")
+			ts,err = ts.ParseGlob(fmt.Sprintf("%s/*layout.tmpl",pathToTemplates))
 			if err!=nil{
 				return myCache ,err
 			}
