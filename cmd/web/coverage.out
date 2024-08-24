@@ -1,0 +1,10 @@
+mode: set
+github.com/donbaking/booking/cmd/web/main.go:26.13,30.13 2 0
+github.com/donbaking/booking/cmd/web/main.go:30.13,33.3 1 0
+github.com/donbaking/booking/cmd/web/main.go:35.2,43.16 4 0
+github.com/donbaking/booking/cmd/web/main.go:46.16,69.15 10 1
+github.com/donbaking/booking/cmd/web/main.go:69.15,72.6 2 0
+github.com/donbaking/booking/cmd/web/main.go:74.2,88.12 8 1
+github.com/donbaking/booking/cmd/web/middleware.go:10.44,20.2 3 1
+github.com/donbaking/booking/cmd/web/middleware.go:23.49,25.2 1 1
+github.com/donbaking/booking/cmd/web/routes.go:14.48,43.2 18 1
