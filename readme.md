@@ -1,6 +1,6 @@
 # 預約網站
 
-這是一個使用 golang 做為後端語言的預約訂房網站project
+這是一個使用 golang 做為後端語言的預約訂房網站 project
 
 - 使用 Go 1.22.3 版本
 - 使用 [chi router library](github.com/go-chi/chi/v5)管理 router

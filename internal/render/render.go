@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -38,7 +39,7 @@ func AddDefaultData(td *models.TemplateData,r *http.Request) *models.TemplateDat
 
 
 // 渲染前端用的Func 將頁面名稱傳入函式後渲染指定的html頁面
-func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *models.TemplateData) error{
 	var tempcache map[string]*template.Template
 	
 	//
@@ -52,7 +53,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *model
 	//get request template from cache
 	t, ok:= tempcache[tmpl]
 	if !ok{
-		log.Fatal("Could not get template from cache")
+		return errors.New("can't get template from cache")
 	}
 
 	buf := new(bytes.Buffer)
@@ -64,7 +65,9 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *model
 	_,err :=buf.WriteTo(w)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 
