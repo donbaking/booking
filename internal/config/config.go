@@ -20,4 +20,6 @@ type AppConfig struct {
 	Inproduction bool
 	//session config
 	Session *scs.SessionManager
+	//日誌LOG
+	ErrorLog *log.Logger
 }

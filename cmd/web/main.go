@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/helpers"
 	"github.com/donbaking/booking/internal/models"
 	"github.com/donbaking/booking/internal/render"
 
@@ -22,6 +24,9 @@ const portNum = ":3000"
 var app config.AppConfig
 //調用SESSION
 var session *scs.SessionManager
+//創建log變數
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 func main() {
 	
@@ -49,6 +54,13 @@ func run()error{
 
 	//如果結束開發要進行商業部屬時這個變數改變
 	app.Inproduction = false
+
+	//information日誌 print在終端
+	infoLog = log.New(os.Stdout,"INFO\t",log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+	//ErrorLog錯誤日誌會有日期時間以及error message
+	errorLog = log.New(os.Stdout,"ERROR\t",log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
 
 	//創建Session 
 	session = scs.New()
@@ -82,6 +94,8 @@ func run()error{
 	fmt.Println("finished creating template cache")
 	//將app以pointer方式傳入NewTemplates
 	render.NewTemplates(&app)
+	//將app傳進helplers
+	helpers.NewHelpers(&app)
 	fmt.Println("finished sending templates")
 
 
