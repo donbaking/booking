@@ -3,11 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/donbaking/booking/internal/config"
 	"github.com/donbaking/booking/internal/forms"
+	"github.com/donbaking/booking/internal/helpers"
 	"github.com/donbaking/booking/internal/models"
 	"github.com/donbaking/booking/internal/render"
 )
@@ -35,10 +35,6 @@ func NewHandlers(r *Repository){
 var counter int = 0
 //Home是建立首頁的handler,用一個接收器來接收repo
 func (m *Repository)Home(w http.ResponseWriter,r *http.Request){
-	//以字串方式獲得ip位置
-	remoteIP := r.RemoteAddr
-	//把ip放到session中
-	m.App.Session.Put(r.Context(),"remote_ip",remoteIP)
 	// 忽略favicon請求
 	if r.URL.Path == "/favicon.ico" {
 		http.NotFound(w, r)
@@ -56,21 +52,12 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 		http.NotFound(w, r)
 		return
 	}
-	//在about加入簡單的logic
-	stringMap := make(map[string]string)
-	stringMap["test"] = "hello,againg"
-	//查找ip
-	remoteIP:= m.App.Session.GetString(r.Context(),"remote_ip")
-	//將ip加入stringmap
-	stringMap["remote_ip"] = remoteIP
-
 	
 	counter++
 	fmt.Println(counter)
 	fmt.Println("render about page")
 	render.RenderTemplate(w, r ,"aboutpage.tmpl",&models.TemplateData{
-		//在這裡將stringMap的值丟入templateData
-		StringMap: stringMap,
+	
 	})
 }
 //make-reservation
@@ -91,7 +78,8 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	//parseform 	
 	err := r.ParseForm()
 	if err != nil{
-		log.Println(err)
+		//helpers 處理server error
+		helpers.ServerError(w,err)
 		return
 	}
 	//四個數據需要處理 in make-reservation form 
@@ -161,7 +149,8 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 	out,err := json.MarshalIndent(resp,"","     ")
 
 	if err !=nil{
-		log.Println(err)
+		helpers.ServerError(w,err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
@@ -178,7 +167,7 @@ func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
 	reservation, ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
 	
 	if !ok {
-		log.Println("canoot get seesion object")
+		m.App.ErrorLog.Println("canoot get seesion object")
 		//用seesion傳遞錯誤訊息
 		m.App.Session.Put(r.Context(),"error","Can't get reservation from session")
 		//將用戶Redirect至首頁

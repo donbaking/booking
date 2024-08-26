@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/gob"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -23,7 +24,12 @@ func TestMain(m *testing.M){
 
 	//如果結束開發要進行商業部屬時這個變數改變
 	testApp.Inproduction = false
-
+	//information日誌 print在終端
+	infoLog := log.New(os.Stdout,"INFO\t",log.Ldate|log.Ltime)
+	testApp.InfoLog = infoLog
+	//ErrorLog錯誤日誌會有日期時間以及error message
+	errorLog := log.New(os.Stdout,"ERROR\t",log.Ldate|log.Ltime|log.Lshortfile)
+	testApp.ErrorLog = errorLog
 	//創建Session 
 	session = scs.New()
 	//設定session持續時間(24小時)通常用30分鐘左右而已
