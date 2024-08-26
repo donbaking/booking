@@ -1,0 +1,18 @@
+mode: set
+github.com/donbaking/booking/internal/forms/errors.go:7.44,9.2 1 1
+github.com/donbaking/booking/internal/forms/errors.go:12.42,14.18 2 0
+github.com/donbaking/booking/internal/forms/errors.go:14.18,16.3 1 0
+github.com/donbaking/booking/internal/forms/errors.go:17.2,17.14 1 0
+github.com/donbaking/booking/internal/forms/form.go:18.27,20.2 1 1
+github.com/donbaking/booking/internal/forms/form.go:23.32,28.2 1 1
+github.com/donbaking/booking/internal/forms/form.go:31.55,34.13 2 1
+github.com/donbaking/booking/internal/forms/form.go:34.13,36.3 1 1
+github.com/donbaking/booking/internal/forms/form.go:37.2,37.13 1 1
+github.com/donbaking/booking/internal/forms/form.go:41.42,42.30 1 1
+github.com/donbaking/booking/internal/forms/form.go:42.30,46.36 2 1
+github.com/donbaking/booking/internal/forms/form.go:46.36,48.4 1 1
+github.com/donbaking/booking/internal/forms/form.go:54.70,56.21 2 1
+github.com/donbaking/booking/internal/forms/form.go:56.21,59.3 2 1
+github.com/donbaking/booking/internal/forms/form.go:60.2,60.13 1 1
+github.com/donbaking/booking/internal/forms/form.go:64.37,65.39 1 1
+github.com/donbaking/booking/internal/forms/form.go:65.39,67.3 1 1

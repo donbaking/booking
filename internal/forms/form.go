@@ -19,7 +19,6 @@ func(f *Form) Valid() bool{
 	return len(f.Errors) == 0
 }
 
-
 //初始化form
 func New(data url.Values) *Form{
 	return &Form{
@@ -66,5 +65,6 @@ func (f *Form) Isemail(field string){
 	if !govalidator.IsEmail(f.Get(field)){
 		f.Errors.Add(field,"電子郵件錯誤")
 	}
+	
 }
 
