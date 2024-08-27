@@ -8,3 +8,4 @@
 - 使用 [nosurf](github.com/justinas/nosurf) library 處理 CSRF 攻擊
 - 使用 [govalidator](github.com/asaskevich/govalidator) 處理表單輸入的驗證
 - 使用 [PostgreSQL](https://www.postgresql.org/) 做為後端資料庫
+- 使用 [POP](github.com/gobuffalo/pop) 做為ORM
