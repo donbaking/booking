@@ -70,7 +70,7 @@ func getRoutes() http.Handler {
 	
 	fmt.Println("finished creating template cache")
 	//將app以pointer方式傳入NewTemplates
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 	fmt.Println("finished sending templates")
 	//第三方package 處理route
 	mux := chi.NewRouter()

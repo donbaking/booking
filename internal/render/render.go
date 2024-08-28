@@ -19,8 +19,8 @@ var app *config.AppConfig
 //建立templates的path,提供給測試用
 var pathToTemplates = "./templates"
 
-//NewTemplates 從template package 設置config
-func  NewTemplates(a *config.AppConfig){
+//NewRenderer 從template package 設置config
+func  NewRenderer(a *config.AppConfig){
 	app = a
 }
 
@@ -39,7 +39,7 @@ func AddDefaultData(td *models.TemplateData,r *http.Request) *models.TemplateDat
 
 
 // 渲染前端用的Func 將頁面名稱傳入函式後渲染指定的html頁面
-func RenderTemplate(w http.ResponseWriter, r *http.Request,tmpl string,td *models.TemplateData) error{
+func Template(w http.ResponseWriter, r *http.Request,tmpl string,td *models.TemplateData) error{
 	var tempcache map[string]*template.Template
 	
 	//

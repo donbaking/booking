@@ -44,11 +44,11 @@ func TestRenderTemplate(t *testing.T){
 
 	
 	//4value need to be inputs
-	err = RenderTemplate(&ww ,r, "homepage.tmpl", &models.TemplateData{})
+	err = Template(&ww ,r, "homepage.tmpl", &models.TemplateData{})
 	if err != nil{
 		t.Error("error writing template to browser")
 	}
-	err = RenderTemplate(&ww ,r, "fake.tmpl",&models.TemplateData{})
+	err = Template(&ww ,r, "fake.tmpl",&models.TemplateData{})
 	if err == nil{
 		t.Error("rendered template doesn't exist")
 
@@ -57,8 +57,8 @@ func TestRenderTemplate(t *testing.T){
 }
 
 //TestNewTemplate
-func TestNewTemplate(t *testing.T){
-	NewTemplates(app)
+func TestNewRenderer(t *testing.T){
+	NewRenderer(app)
 }
 
 //TestCreateTemplateCache

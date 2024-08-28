@@ -6,10 +6,13 @@ import (
 	"net/http"
 
 	"github.com/donbaking/booking/internal/config"
+	"github.com/donbaking/booking/internal/driver"
 	"github.com/donbaking/booking/internal/forms"
 	"github.com/donbaking/booking/internal/helpers"
 	"github.com/donbaking/booking/internal/models"
 	"github.com/donbaking/booking/internal/render"
+	"github.com/donbaking/booking/internal/repository"
+	"github.com/donbaking/booking/internal/repository/dbrepo"
 )
 
 //聲明變數repo
@@ -18,11 +21,13 @@ var Repo *Repository
 //repository 的struct
 type Repository struct{
 	App *config.AppConfig
+	DB repository.DatabaseRepo
 }
 //NewRepo creates a new repository
-func NewRepo(a *config.AppConfig) *Repository{
+func NewRepo(a *config.AppConfig,db *driver.DB) *Repository{
 	return &Repository{
 		App: a,
+		DB: dbrepo.NewPostgresRepo(db.SQL,a),
 	}
 }
 
@@ -43,7 +48,7 @@ func (m *Repository)Home(w http.ResponseWriter,r *http.Request){
 	counter++
 	fmt.Println(counter)
 	fmt.Println("render homepage")
-	render.RenderTemplate(w , r , "homepage.tmpl",&models.TemplateData{})
+	render.Template(w , r , "homepage.tmpl",&models.TemplateData{})
 }
 //About是處理about page的handler用一個接收器來接收repo
 func (m *Repository)About(w http.ResponseWriter,r *http.Request){
@@ -56,7 +61,7 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 	counter++
 	fmt.Println(counter)
 	fmt.Println("render about page")
-	render.RenderTemplate(w, r ,"aboutpage.tmpl",&models.TemplateData{
+	render.Template(w, r ,"aboutpage.tmpl",&models.TemplateData{
 	
 	})
 }
@@ -67,7 +72,7 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	data := make(map[string]interface{})
 	data["reservation"] = emptyReservation
 
-	render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
+	render.Template(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
 	})
@@ -100,7 +105,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		//先將form的內容儲存起來
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		render.RenderTemplate(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
+		render.Template(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -113,16 +118,16 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 }
 //General
 func (m *Repository) Generals(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"generalspage.tmpl",&models.TemplateData{})
+	render.Template(w, r ,"generalspage.tmpl",&models.TemplateData{})
 }	
 //Majors render
 func (m *Repository) Majors(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"majorspage.tmpl",&models.TemplateData{})
+	render.Template(w, r ,"majorspage.tmpl",&models.TemplateData{})
 }	
 
 //Availability render search-availability的頁面
 func (m *Repository) Availability(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"search-availabilitypage.tmpl",&models.TemplateData{})
+	render.Template(w, r ,"search-availabilitypage.tmpl",&models.TemplateData{})
 }	
 //POSTreq Availability render search-availability的頁面
 func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
@@ -158,7 +163,7 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 }	
 //Contact render 聯絡人的頁面
 func (m *Repository) Contact(w http.ResponseWriter,r *http.Request){
-	render.RenderTemplate(w, r ,"contactpage.tmpl",&models.TemplateData{})
+	render.Template(w, r ,"contactpage.tmpl",&models.TemplateData{})
 }	
 
 //
@@ -179,7 +184,7 @@ func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
-	render.RenderTemplate(w, r ,"reservation-summarypage.tmpl",&models.TemplateData{
+	render.Template(w, r ,"reservation-summarypage.tmpl",&models.TemplateData{
 		Data :data,
 	})
 }
