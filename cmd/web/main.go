@@ -51,14 +51,14 @@ func main() {
 }
 
 func run()( *driver.DB , error){
-	//put something in the session
+	//put all modle into the session
 	gob.Register(models.Reservation{})
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.RoomRestriction{})
 	gob.Register(models.Restriction{})
 
-	//如果結束開發要進行商業部屬時這個變數改變
+	//如果結束開發要進行商業部屬時這個變數改變為true
 	app.Inproduction = false
 
 	//information日誌 print在終端

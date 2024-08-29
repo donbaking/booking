@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/donbaking/booking/internal/config"
 	"github.com/donbaking/booking/internal/driver"
@@ -87,12 +89,41 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		helpers.ServerError(w,err)
 		return
 	}
-	//四個數據需要處理 in make-reservation form 
+	//處理startDate and Enddate
+	sd := r.Form.Get("start_date")
+	ed := r.Form.Get("end_date")
+	//轉換date型態 -- 01/02 03:04:05PM '06 -0700
+	//https://www.pauladamsmith.com/blog/2011/05/go_time.html
+
+	layout := "2006-01-02"
+	startDate , err := time.Parse(layout,sd)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	endDate , err := time.Parse(layout,ed)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	
+	//room Id
+	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+
+	//數據需要處理 in make-reservation form 
 	reservation := models.Reservation{
 		FirstName: r.Form.Get("first_name"),
 		LastName: r.Form.Get("last_name"),
 		Phone: r.Form.Get("phone"),
 		Email: r.Form.Get("email"),
+		StartDate: startDate,
+		EndDate: endDate,
+		RoomID: roomID,
+
 	}
 	
 	form := forms.New(r.PostForm)
@@ -111,6 +142,31 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		})
 		return
 	}
+	//確認無誤後將資料insert進database
+	newReservationID,err := m.DB.InsertReservation(reservation)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	fmt.Printf("insert newreservation success")
+
+	//restriction data
+	restriction := models.RoomRestriction{
+		RoomID: roomID,
+		ReservationID: newReservationID,
+		RestrictionID: 1,
+		StartDate: startDate,
+		EndDate: endDate,
+	}
+	//insert restriction
+	err = m.DB.InsertRoomRestriction(restriction)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	
+	fmt.Printf("insert roomrestriction success")
+
 	//將物件資料用session方式傳到模板再讓另一個後端邏輯讀取
 	m.App.Session.Put(r.Context(),"reservation",reservation)
 	//每一次收到post之後都要重新導向用戶到其他頁面才不會收到重複的post
