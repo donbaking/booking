@@ -1,0 +1,1 @@
+change_column("room_restrictions","reservations_id","integer",{"null":true})

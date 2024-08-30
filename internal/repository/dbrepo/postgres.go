@@ -66,8 +66,8 @@ func (m *postgresDBRepo)InsertRoomRestriction(res models.RoomRestriction)error{
 
 }
 
-//SearchAvailabilityByDates check the room availability and return a bool:true represents room can be reservationally available
-func (m *postgresDBRepo) SearchAvailabilityByDates(start,end time.Time)(bool,error){
+//SearchAvailabilityByDates check the roomID availability and return a bool:true represents room can be reservationally available
+func (m *postgresDBRepo) SearchAvailabilityByDatesByRoomID(start,end time.Time,roomID int)(bool,error){
 	// 設置 context 以限制查詢執行時間為 3 秒
 	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
 	defer cancel()// 在函數結束時取消 context 以釋放資源
@@ -77,11 +77,12 @@ func (m *postgresDBRepo) SearchAvailabilityByDates(start,end time.Time)(bool,err
 	from
 		room_restrictions
 	where 
-		$1 < end_date and $2 > start_date `
+		room_id = $1
+		and $2 < end_date and $3 > start_date `
 	//儲存查到的筆數
 	var numRows int
 	// 執行查詢
-	row := m.DB.QueryRowContext(ctx,query,start,end)
+	row := m.DB.QueryRowContext(ctx,query,roomID,start,end)
 	 // 將查詢結果掃描到 numRows 變數中
 	err := row.Scan(&numRows)
 	if err != nil{
@@ -91,4 +92,42 @@ func (m *postgresDBRepo) SearchAvailabilityByDates(start,end time.Time)(bool,err
 		return true,nil
 	}
 	return false,nil
+}
+
+//SearchAvailabilityForAllRooms returns a slice of available rooms,如果在時間內可以預約的話會return可以被預約的房間
+func (m *postgresDBRepo) SearchAvailabilityForAllRooms(start,end time.Time) ([]models.Room,error){
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+	
+	var rooms []models.Room
+	query:= `
+	select 
+		r.id, r.room_name
+	from 
+		rooms r 
+	where 
+	r.id not in 
+	(select rr.room_id from room_restrictions rr where $1 <rr.end_date and $2> rr.start_date) `
+	
+	rows, err := m.DB.QueryContext(ctx,query,start,end)
+	if err != nil {
+		return rooms,err
+	}
+
+	for rows.Next(){
+		var room models.Room
+		err := rows.Scan(
+			&room.ID,
+			&room.RoomName,
+		)
+		if err != nil{
+			return rooms,err
+		}
+		rooms = append(rooms, room)
+	}
+	
+	if err = rows.Err(); err!=nil{
+		return rooms,err
+	}
+	return rooms,nil 
 }
