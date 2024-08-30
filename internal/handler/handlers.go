@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/donbaking/booking/internal/render"
 	"github.com/donbaking/booking/internal/repository"
 	"github.com/donbaking/booking/internal/repository/dbrepo"
+	"github.com/go-chi/chi/v5"
 )
 
 //聲明變數repo
@@ -191,8 +193,47 @@ func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
 	start:= r.Form.Get(("start"))
 	end:= r.Form.Get(("end"))
 	
-	//convert string to slice of bytes
-	w.Write([]byte(fmt.Sprintf("入住日期:%s 退房日期:%s",start,end)))
+	layout := "2006-01-02"
+	startDate , err := time.Parse(layout,start)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	endDate , err := time.Parse(layout,end)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	log.Println(startDate,endDate)
+	rooms ,err := m.DB.SearchAvailabilityForAllRooms(startDate,endDate)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	log.Println("Available rooms:",rooms)
+	//檢查有沒有房間可以住
+	if len(rooms) ==0{
+		m.App.Session.Put(r.Context(),"error","No Availability")
+		http.Redirect(w,r,"/search-availability",http.StatusSeeOther)
+		return
+	}else{
+		data := make(map[string]interface{})
+		data["rooms"] = rooms
+		startDate = time.Time{}
+		endDate = time.Time{}
+		res := models.Reservation{
+			StartDate:startDate ,
+			EndDate: endDate,
+			
+		}
+		//將數據存在seesion傳給模板
+		m.App.Session.Put(r.Context(),"reservation",res)
+		render.Template(w, r ,"choose-roompage.tmpl",&models.TemplateData{
+			Data :data,
+		})
+	}
+
+	
 }
 
 type jsonResponse struct{
@@ -245,3 +286,25 @@ func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
 	})
 }
 
+func (m *Repository) ChooseRoom( w http.ResponseWriter,r *http.Request ){
+	log.Println("get room id from seesion")
+	//get roomid from template
+	roomId ,err := strconv.Atoi(chi.URLParam(r,"id"))
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+
+	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
+	if !ok {
+		helpers.ServerError(w,err)
+		return
+	}
+	res.RoomID = roomId
+	//將資訊再放入session然後導回到make-reservation page
+	m.App.Session.Put(r.Context(),"reservation",res)
+	log.Println("session storage success")
+	log.Println("redrict to make-reservation page")
+
+	http.Redirect(w,r,"/make-reservation",http.StatusSeeOther)
+}
