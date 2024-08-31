@@ -9,8 +9,8 @@
       <p>
         <strong>選擇的房間為:{{ $res.Room.RoomName }}</strong> <br />
       </p>
-      <p>入住日期(debug):{{index .StringMap "start_date"}}<br /></p>
-      <p>退房日期(debug):{{index .StringMap "end_date"}}<br /></p>
+      <p>入住日期:{{index .StringMap "start_date"}}<br /></p>
+      <p>退房日期:{{index .StringMap "end_date"}}<br /></p>
 
       <form
         action="/make-reservation"
@@ -23,7 +23,9 @@
         <input type="hidden" name="start_date" value="{{index .StringMap "start_date"
 
 
+
         }}" /> <input type="hidden" name="end_date" value="{{index .StringMap "end_date"
+
 
 
         }}" />

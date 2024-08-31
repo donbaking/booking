@@ -238,6 +238,9 @@ type jsonResponse struct{
 	//大寫開頭
     Message string `json:"message"`
 	Ok bool `json:"ok"`
+	RoomID string `json:"room_id"`
+	StartDate string `json:"start_date"`
+	EndDate string `json:"end_date"`
 }
 func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request){
 	
@@ -272,6 +275,9 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 	resp := jsonResponse{
 		Ok : available,
 		Message: "",
+		StartDate: sd,
+		EndDate: ed,
+		RoomID: strconv.Itoa(roomID),
 	}
 	//將json格式化
 	out,err := json.MarshalIndent(resp,"","     ")
@@ -345,4 +351,41 @@ func (m *Repository) ChooseRoom( w http.ResponseWriter,r *http.Request ){
 	log.Println("redrict to make-reservation page")
 	// 重定向用戶到'make-reservation'頁面，使用SeeOther狀態碼
 	http.Redirect(w,r,"/make-reservation",http.StatusSeeOther)
+}
+
+//BookRoom takes URL parameters and updates a session variable, and takes user to make reservation page 
+func (m* Repository) BookRoom(w http.ResponseWriter,r *http.Request){
+	//取前端值
+	roomID , _:= strconv.Atoi(r.URL.Query().Get("id"))
+	sd := r.URL.Query().Get("s")
+	ed := r.URL.Query().Get("e")
+	
+	layout := "2006-01-02"
+	startDate,err := time.Parse(layout,sd)
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	endDate,err := time.Parse(layout,ed)
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	var res models.Reservation
+	res.RoomID = roomID
+	//更新session內容
+	res.StartDate = startDate
+	res.EndDate = endDate
+	room,err := m.DB.GetRoomByID(roomID)
+	if err !=nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	res.Room.RoomName = room.RoomName
+	//將新的session傳到瀏覽器
+	m.App.Session.Put(r.Context(),"reservation",res)
+	//將這些內容傳至make-reservation page並redirct
+	http.Redirect(w,r,"/make-reservation",http.StatusSeeOther)
+	log.Println("id:",roomID,"startdate:",startDate,"enddate",endDate)
+
 }
