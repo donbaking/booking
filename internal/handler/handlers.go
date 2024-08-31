@@ -240,10 +240,38 @@ type jsonResponse struct{
 	Ok bool `json:"ok"`
 }
 func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request){
+	
+
+	sd := r.Form.Get("start")
+	ed := r.Form.Get("end")
+	//將template上的data轉換為可以使用的數據格式
+	layout := "2006-01-02"
+	startDate,err := time.Parse(layout,sd)
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	endDate,err := time.Parse(layout,ed)
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	roomID,err := strconv.Atoi(r.Form.Get("room_id"))
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+
+	available,err := m.DB.SearchAvailabilityByDatesByRoomID(startDate,endDate,roomID)
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	
 	//創建一個json reponse 物件
 	resp := jsonResponse{
-		Ok : false,
-		Message: "Available",
+		Ok : available,
+		Message: "",
 	}
 	//將json格式化
 	out,err := json.MarshalIndent(resp,"","     ")
@@ -252,6 +280,8 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 		helpers.ServerError(w,err)
 		return
 	}
+
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
 

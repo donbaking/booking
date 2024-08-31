@@ -1,4 +1,7 @@
-{{template "base" .}} {{define "content"}}
+{{template "base" .}}
+
+{{define "content"}}
+
 <div class="container">
   <div class="row">
     <div class="col">
@@ -36,6 +39,7 @@
     </div>
   </div>
 </div>
+
 {{ end }}
 
 {{define "js"}}
@@ -44,43 +48,22 @@
     .getElementById("check-availability-button")
     .addEventListener("click", function () {
       let html = `
-<form
-  id="check-availability-form"
-  action=""
-  method="post"
-  novalidate
-  class="needs-validation"
->
-  <div class="form-row">
-    <div class="col">
-      <div class="form-row" id="reservation-dates-modal">
-        <div class="col">
-          <input
-            disabled
-            required
-            class="form-control"
-            type="text"
-            name="start"
-            id="start"
-            placeholder="Arrival"
-          />
-        </div>
-        <div class="col">
-          <input
-            disabled
-            required
-            class="form-control"
-            type="text"
-            name="end"
-            id="end"
-            placeholder="Departure"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</form>
-`;
+        <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
+            <div class="form-row">
+                <div class="col">
+                    <div class="form-row" id="reservation-dates-modal">
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
+                        </div>
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+        `;
       attention.custom({
         title: "Choose your dates",
         msg: html,
@@ -89,32 +72,33 @@
           const rp = new DateRangePicker(elem, {
             format: "yyyy-mm-dd",
             showOnFocus: true,
+            minDate: new Date(),
           });
         },
         didOpen: () => {
           document.getElementById("start").removeAttribute("disabled");
           document.getElementById("end").removeAttribute("disabled");
         },
-
         callback: function (result) {
           console.log("called");
-          //取得id資料
+
           let form = document.getElementById("check-availability-form");
           let formData = new FormData(form);
-          //取得CSRFToken
           formData.append("csrf_token", "{{.CSRFToken}}");
+          formData.append("room_id", "1");
 
           fetch("/search-availability-json", {
-            //將fetch預設的method改為post request
             method: "post",
             body: formData,
-          }).then((response) =>
-            response.json().then((data) => {
-              console.log(data);
-              console.log(data.ok);
-              console.log(data.message);
-            })
-          );
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.ok) {
+                console.log("可以預約");
+              } else {
+                console.log("無法預約");
+              }
+            });
         },
       });
     });
