@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -72,13 +73,37 @@ func (m *Repository)About(w http.ResponseWriter,r *http.Request){
 //make-reservation
 func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	//用get req第一次到make-reservation頁面時會丟一個空的表單出來
-	var emptyReservation models.Reservation
+	// 從session中獲取預訂信息（reservation），並進行類型斷言
+	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
+	if !ok {
+		// 如果無法獲取預訂信息，記錄錯誤並返回伺服器錯誤響應
+		helpers.ServerError(w,errors.New("cannot get reservation from session"))
+		return
+	}
+	//從database撈房間資料
+	room,err := m.DB.GetRoomByID(res.RoomID)
+	if err !=nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	res.Room.RoomName = room.RoomName
+	
+	//把startdate跟enddate轉回string type 讓template讀取
+	sd := res.StartDate.Format("2006-01-02")
+	ed := res.EndDate.Format("2006-01-02")
+
+	//res裡的stringmap儲存
+	stringMap := make(map[string]string)
+	stringMap["start_date"] = sd
+	stringMap["end_date"] = ed
+
 	data := make(map[string]interface{})
-	data["reservation"] = emptyReservation
+	data["reservation"] = res
 
 	render.Template(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
+		StringMap: stringMap,
 	})
 }
 
@@ -216,23 +241,18 @@ func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
 		m.App.Session.Put(r.Context(),"error","No Availability")
 		http.Redirect(w,r,"/search-availability",http.StatusSeeOther)
 		return
-	}else{
-		data := make(map[string]interface{})
-		data["rooms"] = rooms
-		startDate = time.Time{}
-		endDate = time.Time{}
-		res := models.Reservation{
-			StartDate:startDate ,
-			EndDate: endDate,
-			
-		}
-		//將數據存在seesion傳給模板
-		m.App.Session.Put(r.Context(),"reservation",res)
-		render.Template(w, r ,"choose-roompage.tmpl",&models.TemplateData{
-			Data :data,
-		})
 	}
-
+	data := make(map[string]interface{})
+	data["rooms"] = rooms
+	res := models.Reservation{
+		StartDate:startDate ,
+		EndDate: endDate,
+	}
+	//將數據存在seesion傳給模板
+	m.App.Session.Put(r.Context(),"reservation",res)
+	render.Template(w, r ,"choose-roompage.tmpl",&models.TemplateData{
+		Data :data,
+	})
 	
 }
 
@@ -285,26 +305,28 @@ func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
 		Data :data,
 	})
 }
-
+//ChooseRoom 讓使用者在搜尋可以訂房的時間後將使用者導向到make-reservation page
 func (m *Repository) ChooseRoom( w http.ResponseWriter,r *http.Request ){
 	log.Println("get room id from seesion")
-	//get roomid from template
+	//從URL中獲取房間ID並將其轉換為整數
 	roomId ,err := strconv.Atoi(chi.URLParam(r,"id"))
 	if err != nil{
 		helpers.ServerError(w,err)
 		return
 	}
-
+	// 從session中獲取預訂信息（reservation），並進行類型斷言
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
+		// 如果無法獲取預訂信息，記錄錯誤並返回伺服器錯誤響應
 		helpers.ServerError(w,err)
 		return
 	}
+	// 將獲取到的房間ID設定到預訂信息中
 	res.RoomID = roomId
 	//將資訊再放入session然後導回到make-reservation page
 	m.App.Session.Put(r.Context(),"reservation",res)
 	log.Println("session storage success")
 	log.Println("redrict to make-reservation page")
-
+	// 重定向用戶到'make-reservation'頁面，使用SeeOther狀態碼
 	http.Redirect(w,r,"/make-reservation",http.StatusSeeOther)
 }
