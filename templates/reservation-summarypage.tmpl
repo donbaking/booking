@@ -11,14 +11,20 @@
         <thead></thead>
         <tbody>
           <tr>
+            <td>房間:</td>
+            <td>{{ $res.Room.RoomName }}</td>
+          </tr>
+          <tr>
             <td>姓名:</td>
             <td>{{ $res.FirstName }} {{ $res.LastName }}</td>
           </tr>
           <tr>
             <td>入住時間:</td>
+            <td>{{index .StringMap "start_date"}}</td>
           </tr>
           <tr>
             <td>退房時間:</td>
+            <td>{{index .StringMap "end_date"}}</td>
           </tr>
           <tr>
             <td>電子郵件:</td>

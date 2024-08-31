@@ -87,6 +87,8 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 		return
 	}
 	res.Room.RoomName = room.RoomName
+	//將更新後的訊息存入session,讓make reservation以及reservation summary頁面可以使用
+	m.App.Session.Put(r.Context(),"reservation",res)
 	
 	//把startdate跟enddate轉回string type 讓template讀取
 	sd := res.StartDate.Format("2006-01-02")
@@ -109,6 +111,14 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 
 //Post req make-reservation post a reservation form
 func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
+	//將session內的data撈出來
+	reservation,ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
+
+	if !ok{
+		helpers.ServerError(w,errors.New("can't get data from session"))
+		return
+	} 
+	
 	//parseform 	
 	err := r.ParseForm()
 	if err != nil{
@@ -116,43 +126,12 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		helpers.ServerError(w,err)
 		return
 	}
-	//處理startDate and Enddate
-	sd := r.Form.Get("start_date")
-	ed := r.Form.Get("end_date")
-	//轉換date型態 -- 01/02 03:04:05PM '06 -0700
-	//https://www.pauladamsmith.com/blog/2011/05/go_time.html
+	//將session資料更新
+	reservation.FirstName = r.Form.Get("first_name")
+	reservation.LastName = r.Form.Get("last_name")
+	reservation.Phone = r.Form.Get("phone")
+	reservation.Email = r.Form.Get("email")
 
-	layout := "2006-01-02"
-	startDate , err := time.Parse(layout,sd)
-	if err != nil{
-		helpers.ServerError(w,err)
-		return
-	}
-	endDate , err := time.Parse(layout,ed)
-	if err != nil{
-		helpers.ServerError(w,err)
-		return
-	}
-	
-	//room Id
-	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
-	if err != nil{
-		helpers.ServerError(w,err)
-		return
-	}
-
-	//數據需要處理 in make-reservation form 
-	reservation := models.Reservation{
-		FirstName: r.Form.Get("first_name"),
-		LastName: r.Form.Get("last_name"),
-		Phone: r.Form.Get("phone"),
-		Email: r.Form.Get("email"),
-		StartDate: startDate,
-		EndDate: endDate,
-		RoomID: roomID,
-
-	}
-	
 	form := forms.New(r.PostForm)
 	//Required forms data
 	form.Required("first_name", "last_name", "phone", "email")
@@ -176,14 +155,13 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		return
 	}
 	fmt.Printf("insert newreservation success")
-
 	//restriction data
 	restriction := models.RoomRestriction{
-		RoomID: roomID,
+		RoomID: reservation.RoomID,
 		ReservationID: newReservationID,
 		RestrictionID: 1,
-		StartDate: startDate,
-		EndDate: endDate,
+		StartDate: reservation.StartDate,
+		EndDate: reservation.EndDate,
 	}
 	//insert restriction
 	err = m.DB.InsertRoomRestriction(restriction)
@@ -194,7 +172,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	
 	fmt.Printf("insert roomrestriction success")
 
-	//將物件資料用session方式傳到模板再讓另一個後端邏輯讀取
+	//insert後將新的資料更新至seesion
 	m.App.Session.Put(r.Context(),"reservation",reservation)
 	//每一次收到post之後都要重新導向用戶到其他頁面才不會收到重複的post
 	http.Redirect(w,r,"/reservation-summary",http.StatusSeeOther)
@@ -301,8 +279,16 @@ func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
+	
+	sd := reservation.StartDate.Format("2006-01-02")
+	ed := reservation.EndDate.Format("2006-01-02")
+	stringMap := make(map[string]string)
+	stringMap["start_date"] = sd
+	stringMap["end_date"] = ed
+
 	render.Template(w, r ,"reservation-summarypage.tmpl",&models.TemplateData{
 		Data :data,
+		StringMap: stringMap,
 	})
 }
 //ChooseRoom 讓使用者在搜尋可以訂房的時間後將使用者導向到make-reservation page
