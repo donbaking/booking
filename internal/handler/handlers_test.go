@@ -139,20 +139,8 @@ func TestRepository_PostReservation(t *testing.T){
 	if rr.Code != http.StatusSeeOther{
 		t.Errorf("Reservation handler在驗證表單時錯誤但沒有redrict,回傳值 %d, 預期為 %d", rr.Code, http.StatusSeeOther)
 	}
-
-	//TestCase 4 : insert database failed
-	//建立虛擬的form內容
-	reqBody = "first_name=John&last_name=Smith&email=John@test.com&phone=0123456789"
-	//虛擬的http req,並將body轉換為http要求的io狀態
-	req,_ = http.NewRequest("POST","/make-reservation",strings.NewReader(reqBody))
-	req.Header.Set("Content-Type","appliccation/x-www-form-urlencoded")
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
-	// 建立一個 ResponseRecorder 用來記錄 HTTP 回應。
-	rr = httptest.NewRecorder()
-	// 將手動製作的 reservation 資料放入 session 中，這樣我們可以模擬 session 內已有數據的狀況。
-	session.Put(ctx,"reservation",reservation)
 	
+
 }
 
 
