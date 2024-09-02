@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"testing"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
@@ -25,8 +26,7 @@ var session *scs.SessionManager
 var pathToTemplates ="./../../templates"
 var functions = template.FuncMap{}
 
-//有Routes才能測試handler
-func getRoutes() http.Handler {
+func TestMain(m *testing.M){
 	//put something in the session
 	gob.Register(models.Reservation{})
 
@@ -64,13 +64,20 @@ func getRoutes() http.Handler {
 	//將UseCache預設為false
 	app.UseCache = true
 	//將app以pointer形式傳入handlers裡的newrepo
-	repo := NewRepo(&app)
+	repo := NewTestRepo(&app)
 	//傳回將repo傳回NewRepo func
 	NewHandlers(repo)
 	
 	fmt.Println("finished creating template cache")
 	//將app以pointer方式傳入NewTemplates
 	render.NewRenderer(&app)
+
+	os.Exit(m.Run())
+}
+
+//有Routes才能測試handler
+func getRoutes() http.Handler {
+	
 	fmt.Println("finished sending templates")
 	//第三方package 處理route
 	mux := chi.NewRouter()

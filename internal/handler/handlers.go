@@ -35,6 +35,13 @@ func NewRepo(a *config.AppConfig,db *driver.DB) *Repository{
 		DB: dbrepo.NewPostgresRepo(db.SQL,a),
 	}
 }
+//Repository only for testing
+func NewTestRepo(a *config.AppConfig) *Repository{
+	return &Repository{
+		App: a,
+		DB: dbrepo.NewTestingRepo(a),
+	}
+}
 
 //NewHandlers set the repository for the handlers
 func NewHandlers(r *Repository){
@@ -76,14 +83,17 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	// 從session中獲取預訂信息（reservation），並進行類型斷言
 	res, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		// 如果無法獲取預訂信息，記錄錯誤並返回伺服器錯誤響應
-		helpers.ServerError(w,errors.New("cannot get reservation from session"))
+		//在session中記錄錯誤訊息，並將用戶導回其他頁面
+		m.App.Session.Put(r.Context(),"error","Cann't get reservation from session")
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
 	//從database撈房間資料
 	room,err := m.DB.GetRoomByID(res.RoomID)
 	if err !=nil{
-		helpers.ServerError(w,err)
+		//在session中記錄錯誤訊息，並將用戶導回其他頁面
+		m.App.Session.Put(r.Context(),"error","Can't find room in SQL")
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
 	res.Room.RoomName = room.RoomName
@@ -122,8 +132,9 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	//parseform 	
 	err := r.ParseForm()
 	if err != nil{
-		//helpers 處理server error
-		helpers.ServerError(w,err)
+		//helpers 處理server error並重新導向
+		m.App.Session.Put(r.Context(),"error","Can't parse form!")
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
 	//將session資料更新
@@ -142,6 +153,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		//先將form的內容儲存起來
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
+		http.Error(w,"error httpstatus for test",http.StatusSeeOther)
 		render.Template(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
 			Form: form,
 			Data: data,
@@ -151,7 +163,8 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	//確認無誤後將資料insert進database
 	newReservationID,err := m.DB.InsertReservation(reservation)
 	if err != nil{
-		helpers.ServerError(w,err)
+		m.App.Session.Put(r.Context(),"error","Can't insert reservation into database")
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
 	fmt.Printf("insert newreservation success")
@@ -166,7 +179,8 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	//insert restriction
 	err = m.DB.InsertRoomRestriction(restriction)
 	if err != nil{
-		helpers.ServerError(w,err)
+		m.App.Session.Put(r.Context(),"error","Can't insert roomrestriction into database")
+		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
 	
