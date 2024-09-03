@@ -257,7 +257,17 @@ type jsonResponse struct{
 	EndDate string `json:"end_date"`
 }
 func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request){
-	
+	err := r.ParseForm()
+	if err != nil{
+		resp := jsonResponse{
+			Ok: false,
+			Message: "Internal Server Error",
+		}
+		out ,_ := json.MarshalIndent(resp,"","  ")
+		w.Header().Set("Content-Type","application/json")
+		w.Write(out)
+		return
+	}
 
 	sd := r.Form.Get("start")
 	ed := r.Form.Get("end")
@@ -281,8 +291,14 @@ func (m *Repository) PostAvailabilityjson(w http.ResponseWriter,r *http.Request)
 
 	available,err := m.DB.SearchAvailabilityByDatesByRoomID(startDate,endDate,roomID)
 	if err != nil{
-		helpers.ServerError(w,err)
-        return
+		resp := jsonResponse{
+			Ok: false,
+			Message: "Error connecting to database",
+		}
+		out ,_ := json.MarshalIndent(resp,"","  ")
+		w.Header().Set("Content-Type","application/json")
+		w.Write(out)
+		return
 	}
 	
 	//創建一個json reponse 物件

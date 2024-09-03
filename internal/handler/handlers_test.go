@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -191,13 +192,48 @@ func TestRepository_Reservation(t *testing.T){
 	rr = httptest.NewRecorder()
 	reservation.RoomID = 5
 	session.Put(ctx,"reservation",reservation)
+	
 	handler.ServeHTTP(rr,req)
 	//檢查rr狀態是不是redirect
 	if rr.Code != http.StatusTemporaryRedirect{
 		t.Errorf("Reservation handler 回傳錯誤狀態:回傳值 %d,預期為 %d",rr.Code,http.StatusTemporaryRedirect)
 	}
+}
 
+//TestRepository_PostAvailabilityJson
+func TestRepository_PostAvailabilityJson(t *testing.T){
+	//Test case 1: rooms are not available
+	//建立虛擬的form內容
+	reqBody := "start=2050-01-01&end=2050-01-02&room_id=1"
+	//第二種方法建立reqbody
+	// postedData := url.Values{}
+	// postedData.Add("start_date","2050-01-01")
+	// postedData.Add("end_date","2050-01-02")
+	//req,_ := http.NewRequest("POST","/search-availability-json",strings.NewReader(postedData.Encode()))
 
+	
+	
+	//虛擬post request
+	req,_ := http.NewRequest("POST","/search-availability-json",strings.NewReader(reqBody))
+	//從session 獲得ctx
+	ctx := getCtx(req)
+	req = req.WithContext(ctx)
+	//set reqHeader
+	req.Header.Set("Content-Type","application/x-www-form-urlencoded")
+	//建立handler func
+	handler := http.HandlerFunc(Repo.PostAvailabilityjson)
+	//建立serverrecorde
+	rr := httptest.NewRecorder()
+	//make request to handler
+	handler.ServeHTTP(rr,req)
+	//將server端的響應轉換為json
+
+	var j jsonResponse
+	//Reqbody
+	err := json.Unmarshal([]byte(rr.Body.String()),&j)
+	if err != nil{
+		t.Error("failed to parse json")
+	}
 }
 
 // getCtx 函數用來從 session 中載入上下文 (context)。
