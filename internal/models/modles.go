@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 //models裡的東西會insert進database
 
@@ -58,4 +60,12 @@ type RoomRestriction struct{
 	Room Room
 	Reservation Reservation
 	Restriction Restriction
+}
+
+//用來儲存email使用的data
+type MailData struct{
+	To string
+	From string
+	Subject string
+	Content string
 }

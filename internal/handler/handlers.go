@@ -186,6 +186,40 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	
 	fmt.Printf("insert roomrestriction success")
 
+	//確定預約都順利結束後send一封email告知預約
+	//建立content內容
+	htmlMessage :=fmt.Sprintf(`
+		<strong>預約已確認</strong><br>
+		親愛的 Mr./Ms. %s:<br>
+		已確認收到您的預約，預約資訊如下:<br>
+		入住日:%s<br>
+		退房日:%s<br>
+	`,reservation.LastName,reservation.StartDate.Format("2006-01-02"),reservation.EndDate.Format("2006-01-02"))
+	msg := models.MailData{
+		To: reservation.Email,
+		From:"test@example.com" ,
+		Subject:"預約已確認",
+		Content:htmlMessage,
+	}
+	m.App.MailChan <-msg
+	//發郵件給房間主人
+	htmlMessage =fmt.Sprintf(`
+		<strong>新的預約</strong><br>
+		已收到新的房間預約，預約資訊如下:<br>
+		預約房間:%s<br>
+		入住日:%s<br>
+		退房日:%s<br>
+		顧客姓名:%s %s <br>
+	`,reservation.Room.RoomName,reservation.StartDate.Format("2006-01-02"),reservation.EndDate.Format("2006-01-02"),reservation.LastName,reservation.FirstName)
+	msg = models.MailData{
+		To: "test@example.com",
+		From:"test@example.com" ,
+		Subject:"新的預約申請",
+		Content:htmlMessage,
+	}
+	m.App.MailChan <-msg
+
+
 	//insert後將新的資料更新至seesion
 	m.App.Session.Put(r.Context(),"reservation",reservation)
 	//每一次收到post之後都要重新導向用戶到其他頁面才不會收到重複的post
@@ -328,7 +362,7 @@ func (m *Repository) Contact(w http.ResponseWriter,r *http.Request){
 }	
 
 //
-func(m *Repository) ReservationSummary (w http.ResponseWriter,r *http.Request){
+func(m *Repository) ReservationSummary(w http.ResponseWriter,r *http.Request){
 	//從session提取資料
 	reservation, ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
 	

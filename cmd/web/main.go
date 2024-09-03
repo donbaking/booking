@@ -38,6 +38,13 @@ func main() {
 	}
 	//如果main stop SQL連線會關掉
 	defer db.SQL.Close()
+	//運行結束時關閉mailchan
+	defer close(app.MailChan)
+
+	//開始監聽mail chain
+	fmt.Println("start listening mail")
+	listenForMail()
+	
 
 	fmt.Println("start listen on port 3000")
 
@@ -57,6 +64,9 @@ func run()( *driver.DB , error){
 	gob.Register(models.Room{})
 	gob.Register(models.RoomRestriction{})
 	gob.Register(models.Restriction{})
+	//創建一個email使用的channle
+	mailChan := make(chan models.MailData)
+	app.MailChan = mailChan
 
 	//如果結束開發要進行商業部屬時這個變數改變為true
 	app.Inproduction = false

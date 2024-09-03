@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/donbaking/booking/internal/models"
 )
 
 //只會import標準庫裡的內容
@@ -22,4 +23,6 @@ type AppConfig struct {
 	Session *scs.SessionManager
 	//日誌LOG
 	ErrorLog *log.Logger
+	//Email 使用的channle
+	MailChan chan models.MailData
 }
