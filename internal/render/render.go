@@ -33,7 +33,9 @@ func AddDefaultData(td *models.TemplateData,r *http.Request) *models.TemplateDat
 	
 	//讓頁面獲得CSTF的token,從nosurf package拿token 
 	td.CSRFToken = nosurf.Token(r)
-	
+	if app.Session.Exists(r.Context(),"user_id"){
+		td.IsAuthenticated = true
+	}
 	return td
 }
 

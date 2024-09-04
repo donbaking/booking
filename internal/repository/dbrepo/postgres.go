@@ -211,7 +211,7 @@ func (m *postgresDBRepo) Authenticate(email,testPassword string) (int,string,err
 	var id int
 	var hashedPassword string
 	//find the user
-	query_for_serach_user := `select id,password from users where eamil = $1`
+	query_for_serach_user := `select id,password from users where email = $1`
 	row := m.DB.QueryRowContext(ctx,query_for_serach_user,email)
 	err := row.Scan(&id,&hashedPassword)
 	if err != nil{

@@ -20,4 +20,6 @@ type TemplateData struct{
 	Error string
 	//增加Form data type
 	Form *forms.Form
+	//用來檢查有沒有登入狀態
+	IsAuthenticated bool
 }

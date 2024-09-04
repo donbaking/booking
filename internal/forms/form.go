@@ -63,7 +63,7 @@ func(f *Form) MinLength(field string,length int,r *http.Request) bool{
 //Isemail use Govalidator to check email addres
 func (f *Form) Isemail(field string){
 	if !govalidator.IsEmail(f.Get(field)){
-		f.Errors.Add(field,"電子郵件錯誤")
+		f.Errors.Add(field,"電子郵件格式錯誤")
 	}
 	
 }

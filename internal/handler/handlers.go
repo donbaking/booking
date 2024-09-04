@@ -369,7 +369,6 @@ func(m *Repository) ReservationSummary(w http.ResponseWriter,r *http.Request){
 	reservation, ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
 	
 	if !ok {
-		m.App.ErrorLog.Println("canoot get seesion object")
 		//用seesion傳遞錯誤訊息
 		m.App.Session.Put(r.Context(),"error","Can't get reservation from session")
 		//將用戶Redirect至首頁
@@ -455,11 +454,19 @@ func (m* Repository) BookRoom(w http.ResponseWriter,r *http.Request){
 	log.Println("id:",roomID,"startdate:",startDate,"enddate",endDate)
 
 }
-
+//ShowLogin render the login page
 func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request){
 	render.Template(w, r, "loginpage.tmpl", &models.TemplateData{
 		Form : forms.New(nil),
 	})
+}
+//Logout logout user
+func (m *Repository) Logout(w http.ResponseWriter, r *http.Request){
+	_=m.App.Session.Destroy(r.Context())
+	_=m.App.Session.RenewToken(r.Context())
+
+	m.App.Session.Put(r.Context(),"flash","已登出")
+	http.Redirect(w,r,"/",http.StatusSeeOther)
 }
 
 //PostShowLogin 處理login頁面所得到的form data並檢查對應email的密碼是否正確
@@ -477,13 +484,19 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request){
 
 	form := forms.New(r.PostForm)
 	form.Required("email","password")
+	log.Println("check form data")
+	form.Isemail("email")
 	if !form.Valid(){
 		//資料填的不齊全將使用者重新導向
+		render.Template(w,r,"loginpage.tmpl",&models.TemplateData{
+			Form: form,
+		})
+		return
 	}
+	log.Println("check password data")
 	//資料齊全並經過authenticate
 	id, _,err := m.DB.Authenticate(email,password)
 	if err != nil{
-		log.Println(err)
 		m.App.Session.Put(r.Context(),"error","登入失敗")
 		//重新導向
 		http.Redirect(w,r,"/user/login",http.StatusSeeOther)
