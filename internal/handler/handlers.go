@@ -192,14 +192,17 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		<strong>預約已確認</strong><br>
 		親愛的 Mr./Ms. %s:<br>
 		已確認收到您的預約，預約資訊如下:<br>
+		預約房間:%s<br>
 		入住日:%s<br>
 		退房日:%s<br>
-	`,reservation.LastName,reservation.StartDate.Format("2006-01-02"),reservation.EndDate.Format("2006-01-02"))
+	`,reservation.LastName,reservation.Room.RoomName,reservation.StartDate.Format("2006-01-02"),reservation.EndDate.Format("2006-01-02"))
 	msg := models.MailData{
 		To: reservation.Email,
 		From:"test@example.com" ,
 		Subject:"預約已確認",
 		Content:htmlMessage,
+		Template: "basic.html",
+		
 	}
 	m.App.MailChan <-msg
 	//發郵件給房間主人
@@ -216,6 +219,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		From:"test@example.com" ,
 		Subject:"新的預約申請",
 		Content:htmlMessage,
+		Template: "basic.html",
 	}
 	m.App.MailChan <-msg
 

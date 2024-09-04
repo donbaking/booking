@@ -54,6 +54,13 @@ func TestMain(m *testing.M){
 	//把對seesion的設定儲存至config的session狀態
 	app.Session = session
 
+	//設定mail chain
+	mailChan:= make(chan models.MailData)
+	app.MailChan = mailChan
+	defer close(mailChan)
+	listenForMail()
+
+
 	tc,err := CreateTestTemplateCache()
 	if err!= nil {
         log.Fatal("cannot create template cache:",err)
@@ -73,6 +80,16 @@ func TestMain(m *testing.M){
 	render.NewRenderer(&app)
 
 	os.Exit(m.Run())
+}
+
+//listenformail
+func listenForMail(){
+	go func ()  {
+		for{
+			//但沒有東西進入mailchan
+			_ =<-app.MailChan
+		}
+	}()
 }
 
 //有Routes才能測試handler
