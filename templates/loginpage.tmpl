@@ -1,0 +1,32 @@
+{{template "base" .}} {{define "content"}}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h1>登入頁面</h1>
+      <form>
+        <div class="form-group mt-3">
+          <label for="email">電子信箱</label>
+          {{with .Form.Errors.Get "email"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control
+          {{with .Form.Errors.Get "email"}} is-invalid {{ end }}" id="email"
+          autocomplete="off" type="email" name="email" value="" required />
+        </div>
+        <div class="form-group">
+          <label for="password">密碼:</label>
+          {{with .Form.Errors.Get "password"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control
+          {{with .Form.Errors.Get "password"}} is-invalid {{ end }}"
+          id="password" autocomplete="off" type="password" name="password"
+          value="" required />
+        </div>
+        <hr />
+        <input type="submit" class="btn btn-primary" value="提交" />
+      </form>
+    </div>
+  </div>
+</div>
+{{ end }}

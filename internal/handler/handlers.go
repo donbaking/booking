@@ -58,8 +58,6 @@ func (m *Repository)Home(w http.ResponseWriter,r *http.Request){
 		return
 	}
 	counter++
-	fmt.Println(counter)
-	fmt.Println("render homepage")
 	render.Template(w , r , "homepage.tmpl",&models.TemplateData{})
 }
 //About是處理about page的handler用一個接收器來接收repo
@@ -456,4 +454,10 @@ func (m* Repository) BookRoom(w http.ResponseWriter,r *http.Request){
 	http.Redirect(w,r,"/make-reservation",http.StatusSeeOther)
 	log.Println("id:",roomID,"startdate:",startDate,"enddate",endDate)
 
+}
+
+func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request){
+	render.Template(w, r, "loginpage.tmpl", &models.TemplateData{
+		Form : forms.New(nil),
+	})
 }
