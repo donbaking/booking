@@ -461,3 +461,37 @@ func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request){
 		Form : forms.New(nil),
 	})
 }
+
+//PostShowLogin 處理login頁面所得到的form data並檢查對應email的密碼是否正確
+func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request){
+	//根據登入跟登出狀況有不同的token
+	_ = m.App.Session.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil{
+		log.Println(err)
+	}
+	
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+	form.Required("email","password")
+	if !form.Valid(){
+		//資料填的不齊全將使用者重新導向
+	}
+	//資料齊全並經過authenticate
+	id, _,err := m.DB.Authenticate(email,password)
+	if err != nil{
+		log.Println(err)
+		m.App.Session.Put(r.Context(),"error","登入失敗")
+		//重新導向
+		http.Redirect(w,r,"/user/login",http.StatusSeeOther)
+	}
+	
+	//登入成功將id放進seesion
+	m.App.Session.Put(r.Context(),"user_id",id)
+	//登入成功帶回首頁
+	m.App.Session.Put(r.Context(),"flash","登入成功")
+	http.Redirect(w,r,"/",http.StatusSeeOther)
+}

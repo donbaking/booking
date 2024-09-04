@@ -10,7 +10,7 @@ import (
 type User struct{
 	ID int
 	FirstName string
-	LaststName string
+	LastName string
 	Email string
 	Password string
 	AccessLevel string

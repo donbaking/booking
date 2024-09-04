@@ -2,9 +2,11 @@ package dbrepo
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/donbaking/booking/internal/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (m *postgresDBRepo) ALLUsers() bool {
@@ -153,4 +155,78 @@ func (m *postgresDBRepo) GetRoomByID(id int)(models.Room,error){
 		return room,err
 	}
 	return room,nil
+}
+
+//GetUserByID 用來從database中撈出對應id的資料
+func (m *postgresDBRepo) GetuserByID(id int) (models.User,error){
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+
+	query := `select id,firstname,lastname,email,password,access_level,created_at,updated_at
+			from users where id=$1`
+	//儲存找到的data
+	row := m.DB.QueryRowContext(ctx,query,id)
+	var u models.User
+	err := row.Scan(
+		&u.ID,
+        &u.FirstName,
+        &u.LastName,
+        &u.Email,
+        &u.Password,
+        &u.AccessLevel,
+        &u.CreatedAt,
+        &u.UpdatedAt,
+	)
+	if err != nil{
+		return u ,err
+	}
+	return u,nil
+}
+
+//UpdateUser用來修改user資料
+func (m *postgresDBRepo) UpdateUser(u models.User) error{
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+
+	query := `update user set first_name=$1, last_name=$2,email=$3,access_level=$4,updated_at=$5`
+
+	_,err := m.DB.ExecContext(ctx,query,
+		u.FirstName,
+        u.LastName,
+        u.Email,
+        u.AccessLevel,
+        time.Now(),
+	)
+	if err != nil{
+		return err
+	}
+	return nil
+}
+
+//Authenticate  用來檢查user的密碼正不正確
+func (m *postgresDBRepo) Authenticate(email,testPassword string) (int,string,error){
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+	//建立變數
+	var id int
+	var hashedPassword string
+	//find the user
+	query_for_serach_user := `select id,password from users where eamil = $1`
+	row := m.DB.QueryRowContext(ctx,query_for_serach_user,email)
+	err := row.Scan(&id,&hashedPassword)
+	if err != nil{
+		return id,"",err
+	}
+
+	//加密
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword),[]byte(testPassword))
+	//檢查密碼不相同
+	if err == bcrypt.ErrMismatchedHashAndPassword{
+		return 0,"",errors.New("密碼不正確")
+	} else if err != nil{
+		return 0,"",err
+	}
+	//通過檢查可以登入了
+	return id,hashedPassword,nil
+
 }
