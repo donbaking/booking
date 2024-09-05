@@ -118,13 +118,25 @@
           </li>
           <li class="nav-item">
             {{if eq .IsAuthenticated true}}
-            <a
-              class="nav-link"
-              href="/user/logout"
-              tabindex="-1"
-              aria-disabled="true"
-              >Logout</a
-            >
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdownMenuLink"
+                role="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                使用者管理
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <a class="dropdown-item" href="/admin/dashboard"
+                  >Dashboard</a
+                >
+                <a class="dropdown-item" href="/user/logout">登出</a>
+              </div>
+            </li>
             {{else }}
             <a
               class="nav-link"

@@ -508,3 +508,8 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request){
 	m.App.Session.Put(r.Context(),"flash","登入成功")
 	http.Redirect(w,r,"/",http.StatusSeeOther)
 }
+
+//
+func (m *Repository) AdminDashBoard(w http.ResponseWriter, r *http.Request){
+	render.Template(w,r,"admin-dashboardpage.tmpl",&models.TemplateData{})
+}
