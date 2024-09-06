@@ -1,0 +1,72 @@
+{{template "admin" .}}
+
+{{define "page-title"}}
+    預約管理
+{{end}}
+
+{{define "content"}}
+    {{$res := index .Data "reservation"}}
+    {{$src := index .StringMap "src"}}
+    <div class="col-md-12">
+        <p>
+            <strong>入住時間:</strong>{{humanDate $res.StartDate}}<br>
+            <strong>退房時間:</strong>{{humanDate $res.EndDate}}<br>
+            <strong>入住房間為:</strong>{{$res.Room.RoomName}}<br>
+        </p>
+        
+        <form
+        action="/admin/reservations/{{$src}}/{{$res.ID}}"
+        method="post"
+        action=""
+        class=""
+        novalidate
+      >
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+       
+        <div class="form-group mt-3">
+          <label for="first_name">名:</label>
+          {{with .Form.Errors.Get "first_name"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control
+          {{with .Form.Errors.Get "first_name"}} is-invalid {{ end }}"
+          id="first_name" autocomplete="off" type="text" name="first_name"
+          value="{{ $res.FirstName }}" required />
+        </div>
+
+        <div class="form-group">
+          <label for="last_name">姓:</label>
+          {{with .Form.Errors.Get "last_name"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control{{with .Form.Errors.Get "last_name"}}
+          is-invalid {{ end }}" id="last_name" autocomplete="off" type="text"
+          name="last_name" value="{{ $res.LastName }}" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">電子郵件:</label>
+          {{with .Form.Errors.Get "email"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control{{with .Form.Errors.Get "email"}} is-invalid
+          {{ end }}" id="email" autocomplete="off" type="email" name="email"
+          value="{{ $res.Email }}" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">電話:</label>
+          {{with .Form.Errors.Get "phone"}}
+          <label class="text-danger">{{.}}</label>
+          {{ end }}
+          <input class="form-control{{with .Form.Errors.Get "phone"}} is-invalid
+          {{ end }}" id="phone" autocomplete="off" type="phone" name="phone"
+          value="{{ $res.Phone }}" required />
+        </div>
+
+        <hr />
+        <input type="submit" class="btn btn-primary" value="儲存" />
+        <a href="/admin/reservations-{{$src}}" class="btn btn-warning">取消</a>
+      </form>
+    </div>
+{{end}}

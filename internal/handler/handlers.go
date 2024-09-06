@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/donbaking/booking/internal/config"
@@ -541,6 +542,82 @@ func (m *Repository) AdminAllReservation(w http.ResponseWriter,r *http.Request){
 		Data: data,
 	})
 }
+
+func (m *Repository) AdminShowReservation(w http.ResponseWriter,r *http.Request){
+	//從url中得到資料,用"/"分割得到的字串
+	urlstr := strings.Split(r.RequestURI,"/")
+	//從url的/分割完後是第四個element
+	id ,err := strconv.Atoi(urlstr[4])
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	//地3個元素為new或all,可以讓handler知道從哪邊導向過來的
+	src := urlstr[3]
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+
+	//get single reservation data from database
+	res,err := m.DB.GetReservationByID(id)
+	if err !=nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	//用interface可以接所有的datatype
+	data := make(map[string]interface{})
+	data["reservation"] = res
+
+	render.Template(w,r,"admin-reservation-showpage.tmpl",&models.TemplateData{
+		StringMap: stringMap,
+		Data: data,
+		Form: forms.New(nil),
+	})
+}
+
+//
+func (m *Repository) AdminPostReservation(w http.ResponseWriter,r *http.Request){
+	//解析表單	
+	err := r.ParseForm()
+	if err != nil{
+		//helpers 處理server error
+		helpers.ServerError(w,err)
+		return
+	}
+	//從url獲得資料
+	urlstr := strings.Split(r.RequestURI,"/")
+	//從url的/分割完後是第四個element
+	id ,err := strconv.Atoi(urlstr[4])
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	//地3個元素為new或all,可以讓handler知道從哪邊導向過來的
+	src := urlstr[3]
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+
+	//get single reservation data from database
+	res,err := m.DB.GetReservationByID(id)
+	if err !=nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	//更新表單上獲得的資料
+	res.FirstName = r.Form.Get("first_name")
+	res.LastName = r.Form.Get("last_name")
+	res.Email = r.Form.Get("email")
+	res.Phone = r.Form.Get("phone")
+	err = m.DB.UpdateReservation(res)
+	if err !=nil{
+		helpers.ServerError(w,err)
+        return
+	}
+	m.App.Session.Put(r.Context(),"flash","修改完成")
+	//重新導向
+	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+}	
+
+
 func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
 	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{})
 }

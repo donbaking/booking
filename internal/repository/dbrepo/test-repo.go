@@ -64,6 +64,10 @@ func (m *testDBRepo) GetuserByID(id int) (models.User,error){
 func (m *testDBRepo) UpdateUser(u models.User) error{
 	return nil
 }
+func (m *testDBRepo) UpdateReservation(r models.Reservation) error{
+	
+	return nil
+}
 
 
 func (m *testDBRepo) Authenticate(email,testPassword string) (int,string,error){
@@ -81,4 +85,12 @@ func (m* testDBRepo) AllNewReservations()([]models.Reservation,error){
 	var reservations []models.Reservation
 	
 	return reservations, nil
+}
+
+//GetReservationByID Return一個對應輸入id的reservations
+func (m *testDBRepo) GetReservationByID(id int)(models.Reservation,error){
+	
+	var res models.Reservation
+
+	return res,nil
 }
