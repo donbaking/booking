@@ -8,12 +8,15 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/donbaking/booking/internal/config"
 	"github.com/donbaking/booking/internal/models"
 	"github.com/justinas/nosurf"
 )
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"humanDate" : HumanDate,
+}
 
 var app *config.AppConfig
 //建立templates的path,提供給測試用
@@ -22,6 +25,11 @@ var pathToTemplates = "./templates"
 //NewRenderer 從template package 設置config
 func  NewRenderer(a *config.AppConfig){
 	app = a
+}
+
+//
+func HumanDate(t time.Time)string{
+	return t.Format("2006-01-02")
 }
 
 //AddDefaultData 用在如果要在每個頁面加上相同資料時可以使用

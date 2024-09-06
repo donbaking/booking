@@ -514,11 +514,32 @@ func (m *Repository) AdminDashBoard(w http.ResponseWriter, r *http.Request){
 	render.Template(w,r,"admin-dashboardpage.tmpl",&models.TemplateData{})
 }
 
+//AdminNewReservation 將新的預約資料show在admin的dashboard
 func (m *Repository) AdminNewReservation(w http.ResponseWriter,r *http.Request){
-	render.Template(w,r,"admin-new-reservationpage.tmpl",&models.TemplateData{})
+	reservations , err := m.DB.AllNewReservations()
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+	render.Template(w,r,"admin-new-reservationpage.tmpl",&models.TemplateData{
+		Data:data,
+	})
 }
+
+//AdminAllReservations 將所有預約資料show在admin的dashboard
 func (m *Repository) AdminAllReservation(w http.ResponseWriter,r *http.Request){
-	render.Template(w,r,"admin-all-reservationpage.tmpl",&models.TemplateData{})
+	reservations , err := m.DB.AllReservations()
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+	render.Template(w,r,"admin-all-reservationpage.tmpl",&models.TemplateData{
+		Data: data,
+	})
 }
 func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
 	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{})
