@@ -509,7 +509,17 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request){
 	http.Redirect(w,r,"/",http.StatusSeeOther)
 }
 
-//
+//AdminDashBoard 用來render 用戶登入後的dashboardpage
 func (m *Repository) AdminDashBoard(w http.ResponseWriter, r *http.Request){
 	render.Template(w,r,"admin-dashboardpage.tmpl",&models.TemplateData{})
+}
+
+func (m *Repository) AdminNewReservation(w http.ResponseWriter,r *http.Request){
+	render.Template(w,r,"admin-new-reservationpage.tmpl",&models.TemplateData{})
+}
+func (m *Repository) AdminAllReservation(w http.ResponseWriter,r *http.Request){
+	render.Template(w,r,"admin-all-reservationpage.tmpl",&models.TemplateData{})
+}
+func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
+	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{})
 }

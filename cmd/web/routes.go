@@ -38,12 +38,14 @@ func routes(app *config.AppConfig) http.Handler{
 	mux.Post("/search-availability-json", handler.Repo.PostAvailabilityjson)
 	mux.Post("/make-reservation",handler.Repo.PostReservation)
 	mux.Post("/user/login",handler.Repo.PostShowLogin)
-	//驗證
+	//admin下的route
 	mux.Route("/admin",func (mux chi.Router)  {
 		//用authcheck middleware
 		mux.Use(AuthCheck)
 		mux.Get("/dashboard",handler.Repo.AdminDashBoard)
-
+		mux.Get("/reservations-new",handler.Repo.AdminNewReservation)
+		mux.Get("/reservations-all",handler.Repo.AdminAllReservation)
+		mux.Get("/reservations-calendar",handler.Repo.AdminReservationCalendar)
 	})
 	
 	//建立一個讀取靜態文件的路徑
