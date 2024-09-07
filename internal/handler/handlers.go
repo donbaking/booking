@@ -621,3 +621,37 @@ func (m *Repository) AdminPostReservation(w http.ResponseWriter,r *http.Request)
 func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
 	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{})
 }
+
+//AdminProcessReservation 改變訂單狀態為已處理
+func (m *Repository) AdminProcessReservation(w http.ResponseWriter,r *http.Request){
+	//從url拿資料 ud以及source
+	id ,_ := strconv.Atoi(chi.URLParam(r,"id"))
+	src := chi.URLParam(r,"src")
+	err := m.DB.UpdateProcessedForReservation(id,1)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return 
+	}
+	m.App.Session.Put(r.Context(),"flash","預約已確認")
+	log.Printf("/admin/reservations-%s",src)
+	//重新導向
+	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+}
+
+//AdminDeleteReservation 刪除一個預約
+func (m *Repository) AdminDeleteReservation(w http.ResponseWriter,r *http.Request){
+	//從url拿資料 ud以及source
+	id ,_ := strconv.Atoi(chi.URLParam(r,"id"))
+	src := chi.URLParam(r,"src")
+	err := m.DB.DeleteReservation(id)
+	if err != nil{
+		helpers.ServerError(w,err)
+		return 
+	}
+	//刪除預約之後在room-restrictioos table也會刪除因為在foreign key設定為cascaded
+	//參考資料:https://www.tsnien.idv.tw/MySQL_WebBook/chap12/12-1%20%E7%B4%9A%E8%81%AF%20Cascade%20%E7%B0%A1%E4%BB%8B.html
+	m.App.Session.Put(r.Context(),"flash","預約已刪除")
+	log.Printf("/admin/reservations-%s",src)
+	//重新導向
+	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+}

@@ -48,6 +48,9 @@ func routes(app *config.AppConfig) http.Handler{
 		mux.Get("/reservations-calendar",handler.Repo.AdminReservationCalendar)
 		mux.Get("/reservations/{src}/{id}",handler.Repo.AdminShowReservation)
 		mux.Post("/reservations/{src}/{id}",handler.Repo.AdminPostReservation)
+		mux.Get("/process-reservation/{src}/{id}",handler.Repo.AdminProcessReservation)
+		mux.Get("/delete-reservation/{src}/{id}",handler.Repo.AdminDeleteReservation)
+	
 	})
 	
 	//建立一個讀取靜態文件的路徑

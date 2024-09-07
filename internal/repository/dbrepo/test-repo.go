@@ -69,6 +69,14 @@ func (m *testDBRepo) UpdateReservation(r models.Reservation) error{
 	return nil
 }
 
+func (m *testDBRepo) UpdateProcessedForReservation(id int, prostatus int) error{
+	return nil
+}
+
+func (m *testDBRepo) DeleteReservation(id int) error{
+
+	return nil // 成功則返回 nil
+}
 
 func (m *testDBRepo) Authenticate(email,testPassword string) (int,string,error){
 	return 0,"",nil

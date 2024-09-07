@@ -65,8 +65,47 @@
         </div>
 
         <hr />
-        <input type="submit" class="btn btn-primary" value="儲存" />
-        <a href="/admin/reservations-{{$src}}" class="btn btn-warning">取消</a>
+        <div class="float-start">
+          <input type="submit" class="btn btn-primary" value="儲存" />
+          <a href="/admin/reservations-{{$src}}" class="btn btn-warning">取消</a>
+          <a href="#!" class="btn btn-info" onclick="processRes({{$res.ID}})">已處理</a>
+        </div>
+        <div class="float-end">
+          <a href="#!" class="btn btn-danger" onclick="deleteRes({{$res.ID}})">刪除預約</a>
+        </div>
+        <div class="clearfix"></div>
       </form>
     </div>
+{{end}}
+
+{{define "js"}}
+{{$src := index .StringMap "src"}}
+<script>
+  function processRes(id){
+    //跳出提示
+    attention.custom({
+      icon : "warning",
+      msg : "確定要確認預約嗎?",
+      callback : function(result){
+        if (result !==false){
+          window.location.href = "/admin/process-reservation/{{$src}}/" + id
+        }
+      }
+    })
+  }
+  function deleteRes(id ){
+    //跳出提示
+    attention.custom({
+      icon : "warning",
+      msg : "確定要確認預約嗎?",
+      callback : function(result){
+        if (result !==false){
+          window.location.href = "/admin/delete-reservation/{{$src}}/" + id
+        }
+      }
+    })
+
+  }
+</script>
+
 {{end}}

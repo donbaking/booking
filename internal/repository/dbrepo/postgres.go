@@ -203,7 +203,7 @@ func (m *postgresDBRepo) UpdateUser(u models.User) error{
 	return nil
 }
 
-
+//UpdateReservation 更新預約資料
 func (m *postgresDBRepo) UpdateReservation(r models.Reservation) error{
 	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
 	defer cancel()// 在函數結束時取消 context 以釋放資源
@@ -227,6 +227,50 @@ func (m *postgresDBRepo) UpdateReservation(r models.Reservation) error{
 		return err
 	}
 	return nil
+}
+
+//UpdateProcessedForReservation 更新訂單的處理狀態
+func (m *postgresDBRepo) UpdateProcessedForReservation(id int, prostatus int) error{
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+
+	query := `
+	update reservations 
+	set processed=$1,updated_at=$2
+	where
+		id =$3
+	`
+
+	_,err := m.DB.ExecContext(ctx,query,
+		prostatus,
+		time.Now(),
+        id,
+	)
+	if err != nil{
+		return err
+	}
+	return nil
+}
+
+//
+func (m *postgresDBRepo) DeleteReservation(id int) error{
+	// 設定一個3秒的 context timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel() // 在函數結束時取消 context 以釋放資源
+
+	// SQL 刪除語句
+	query := `
+		DELETE FROM reservations 
+		WHERE id = $1
+	`
+
+	// 執行 SQL 語句，並傳入 id
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err // 若有錯誤，返回錯誤
+	}
+
+	return nil // 成功則返回 nil
 }
 
 //Authenticate  用來檢查user的密碼正不正確
