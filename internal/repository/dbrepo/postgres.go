@@ -441,3 +441,85 @@ func (m *postgresDBRepo) GetReservationByID(id int)(models.Reservation,error){
 	}
 	return res,nil
 }
+
+//AllRooms returns所有房間的資料
+func (m *postgresDBRepo) AllRooms() ([]models.Room,error){
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+	
+	var rooms []models.Room
+
+	query := `
+	select 
+		id, room_name,created_at,updated_at
+	from
+		rooms
+	order by
+	    room_name
+	`
+
+	rows,err := m.DB.QueryContext(ctx,query)
+	if err != nil{
+		return rooms,err
+	}
+	defer rows.Close()
+
+	for rows.Next(){
+		var rm models.Room
+		err := rows.Scan(
+			&rm.ID,
+            &rm.RoomName,
+            &rm.CreatedAt,
+            &rm.UpdatedAt,
+		)
+		if err!= nil{
+            return rooms,err
+        }
+		rooms = append(rooms, rm)
+	}
+	if err =  rows.Err() ; err != nil{
+		return rooms,err
+	}
+	
+	return rooms,nil
+}
+//透過日期獲得該房間的restrictions
+func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int,start,end time.Time)([]models.RoomRestriction,error){
+	ctx,cancel := context.WithTimeout(context.Background(),3*time.Second)
+	defer cancel()// 在函數結束時取消 context 以釋放資源
+
+	//create models儲存roomrestrictions
+	var restrictions []models.RoomRestriction
+
+	query := `
+	select
+		id,reservations_id,restrictions_id,room_id,start_date,end_date
+	from
+		room_restrictions where $1 < end_date and $2 >= start_date and room_id = $3
+		
+	`
+	rows,err := m.DB.QueryContext(ctx,query,start,end,roomID)
+	if err != nil{
+		return restrictions,err
+	}
+	defer rows.Close()
+	
+	for rows.Next(){
+		var r models.RoomRestriction
+		err := rows.Scan(
+            &r.ID,
+            &r.ReservationID,
+            &r.RestrictionID,
+            &r.RoomID,
+			&r.StartDate,
+            &r.EndDate,
+		)
+		if err!= nil{
+            return restrictions,err
+        }
+		restrictions = append(restrictions, r)
+	}
+
+	return restrictions ,nil
+}	
+

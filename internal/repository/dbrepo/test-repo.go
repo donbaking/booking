@@ -102,3 +102,16 @@ func (m *testDBRepo) GetReservationByID(id int)(models.Reservation,error){
 
 	return res,nil
 }
+
+//AllRooms returns所有房間的資料
+func (m *testDBRepo) AllRooms() ([]models.Room,error){
+	var rooms []models.Room
+	return rooms,nil
+}
+
+func (m *testDBRepo) GetRestrictionsForRoomByDate(roomID int,start,end time.Time)([]models.RoomRestriction,error){
+	//create models儲存roomrestrictions
+	var restrictions []models.RoomRestriction
+
+	return restrictions ,nil
+}	

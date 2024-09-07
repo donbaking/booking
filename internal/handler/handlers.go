@@ -619,7 +619,106 @@ func (m *Repository) AdminPostReservation(w http.ResponseWriter,r *http.Request)
 
 
 func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
-	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{})
+	//現在時間
+	now := time.Now()
+
+	//從頁面點擊的url來獲得年月份
+	if r.URL.Query().Get("y") != ""{
+		year , _ := strconv.Atoi(r.URL.Query().Get("y"))
+		month , _ := strconv.Atoi(r.URL.Query().Get("m"))
+		//reset now
+		now = time.Date(year,time.Month(month),1,0,0,0,0,time.UTC)
+	}
+	//create data map to pass data to template
+	data := make(map[string]interface{})
+	data["now"] = now
+
+	//按鍵for month change
+	next:=now.AddDate(0,1,0)
+	last:=now.AddDate(0,-1,0)
+	//format month
+	nextMonth := next.Format("01")
+	nextMonthYear := next.Format("2006")
+	lastMonth := last.Format("01")
+	lastMonthYear := last.Format("2006")
+	//將formant過的資料加入stringMap 傳給template
+	stringMap := make(map[string]string)
+	stringMap["NextMonth"] = nextMonth
+	stringMap["NextMonthYear"] = nextMonthYear
+	stringMap["LastMonth"] = lastMonth
+	stringMap["LastMonthYear"] = lastMonthYear
+
+	//format現在時間
+	stringMap["this_month"] = now.Format("01")
+	stringMap["this_month_year"] = now.Format("2006")
+
+	//得到對應月份的天數並放置data內
+	currentYear,currentMonth,_ := now.Date()
+	currentLocation := now.Location()
+	//得到當前月份的第一天
+	firstOfMonth := time.Date(currentYear,currentMonth,1,0,0,0,0,currentLocation)
+	//得到當前月份的最後一天(+1個月並減一天)
+	lastOfMonth := firstOfMonth.AddDate(0,1,-1)
+	
+	intMap := make(map[string]int)
+	//得到該月份的天數
+	intMap["days_in_month"] = lastOfMonth.Day()
+	//從database撈出所有房間的資料
+	rooms,err := m.DB.AllRooms()
+	if err != nil{
+		helpers.ServerError(w,err)
+        return
+	}
+
+	data["rooms"] = rooms
+
+	//遍歷rooms資料
+	for _,x := range rooms{
+		//得到rooms的reservtaion
+		//create maps
+		reservationMap:=make(map[string]int)
+		
+		blockMap := make(map[string]int)
+		//根據date遍歷
+		for d := firstOfMonth; !d.After(lastOfMonth); d= d.AddDate(0,0,1){
+			reservationMap[d.Format("2006-01-02")] =0
+			blockMap[d.Format("2006-01-02")] =0
+		}
+		//得到房間的所有restrictions
+		restrictions,err := m.DB.GetRestrictionsForRoomByDate(x.ID,firstOfMonth,lastOfMonth)
+		if err != nil{
+			helpers.ServerError(w,err)
+            return
+		}
+		
+		//loop restrictions 找出可以訂的或是沒有被訂走的時間
+		for _,y := range restrictions{
+			if y.ReservationID>0{
+				//被訂走了
+				for d:= y.StartDate; !d.After(y.EndDate) ; d=d.AddDate(0,0,1){
+					reservationMap[d.Format("2006-01-02")] = y.ReservationID
+
+				}
+			}else{
+				//沒被訂走
+				blockMap[y.StartDate.Format("2006-01-02")] = y.ID
+			}
+		}
+		
+
+		//儲存起來才可以傳到template
+		data[fmt.Sprintf("reservation_map_%d",x.ID)] = reservationMap
+		data[fmt.Sprintf("block_map_%d",x.ID)] = blockMap
+		//傳送操作前的blockmap,post request之後才能比較
+		m.App.Session.Put(r.Context(),fmt.Sprintf("block_map_%d",x.ID),blockMap)
+	}
+
+	//根據不同年份及月份展示reservation calendar
+	render.Template(w,r,"admin-reservation-calendarpage.tmpl",&models.TemplateData{
+		StringMap: stringMap,
+		Data: data,
+		IntMap: intMap,
+	})
 }
 
 //AdminProcessReservation 改變訂單狀態為已處理
