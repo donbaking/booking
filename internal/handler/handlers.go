@@ -697,7 +697,6 @@ func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Requ
 				//被訂走了
 				for d:= y.StartDate; !d.After(y.EndDate) ; d=d.AddDate(0,0,1){
 					reservationMap[d.Format("2006-01-02")] = y.ReservationID
-
 				}
 			}else{
 				//沒被訂走
@@ -720,6 +719,40 @@ func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Requ
 		IntMap: intMap,
 	})
 }
+
+
+//AdminPostReservatioCalendar 處理reservationCalendar頁面傳來的postrequest
+func (m *Repository)AdminPostReservationCalendar(w http.ResponseWriter,r *http.Request){
+	err := r.ParseForm()
+	if err!= nil{
+		helpers.ServerError(w,err)
+		return
+	}
+
+	//取得template中的month and year
+	year ,_ := strconv.Atoi(r.Form.Get("y"))
+	month ,_ := strconv.Atoi(r.Form.Get("m"))
+
+	// //得到所有房間資料
+	// rooms , err := m.DB.AllRooms()
+	// if err != nil{
+	// 	helpers.ServerError(w,err)
+	// 	return
+	// }
+	// //遍歷rooms
+	// for _,x := range rooms{
+	// 	//Get the block from the session. Loop through entire map
+	// 	//
+	// }
+
+	//session
+	m.App.Session.Put(r.Context(),"flash","修改已保存")
+
+	//重新導向
+	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-calendar?y=%d&m=%d",year,month),http.StatusSeeOther)
+
+}
+
 
 //AdminProcessReservation 改變訂單狀態為已處理
 func (m *Repository) AdminProcessReservation(w http.ResponseWriter,r *http.Request){

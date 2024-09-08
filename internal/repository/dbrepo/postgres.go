@@ -490,10 +490,10 @@ func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int,start,end time.
 
 	//create models儲存roomrestrictions
 	var restrictions []models.RoomRestriction
-
+	//如果reservations id 為null將它改為0
 	query := `
 	select
-		id,reservations_id,restrictions_id,room_id,start_date,end_date
+		id, coalesce(reservations_id,0),restrictions_id,room_id,start_date,end_date
 	from
 		room_restrictions where $1 < end_date and $2 >= start_date and room_id = $3
 		
