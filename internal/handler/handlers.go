@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -102,7 +101,7 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	//把startdate跟enddate轉回string type 讓template讀取
 	sd := res.StartDate.Format("2006-01-02")
 	ed := res.EndDate.Format("2006-01-02")
-
+	log.Printf(sd,ed)
 	//res裡的stringmap儲存
 	stringMap := make(map[string]string)
 	stringMap["start_date"] = sd
@@ -120,14 +119,6 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 
 //Post req make-reservation post a reservation form
 func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
-	//將session內的data撈出來
-	reservation,ok := m.App.Session.Get(r.Context(),"reservation").(models.Reservation)
-
-	if !ok{
-		helpers.ServerError(w,errors.New("can't get data from session"))
-		return
-	} 
-	
 	//parseform 	
 	err := r.ParseForm()
 	if err != nil{
@@ -136,15 +127,50 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
 		return
 	}
-	//將session資料更新
-	reservation.FirstName = r.Form.Get("first_name")
-	reservation.LastName = r.Form.Get("last_name")
-	reservation.Phone = r.Form.Get("phone")
-	reservation.Email = r.Form.Get("email")
 
+	sd:=r.Form.Get("start_date")
+	ed:=r.Form.Get("end_date")
+	layout := "2006-01-02"
+	startDate ,err := time.Parse(layout,sd)
+	if err !=nil{
+		m.App.Session.Put(r.Context(),"error","can't parse start date")
+		http.Redirect(w,r,"/",http.StatusSeeOther)
+	}
+	endDate ,err := time.Parse(layout,ed)
+	if err !=nil{
+		m.App.Session.Put(r.Context(),"error","can't parse end date")
+		http.Redirect(w,r,"/",http.StatusSeeOther)
+	}
+	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
+	if err !=nil{
+		m.App.Session.Put(r.Context(),"error","invalid data!")
+		http.Redirect(w,r,"/",http.StatusSeeOther)
+	}
+	room ,err := m.DB.GetRoomByID(roomID)
+	if err !=nil{
+		m.App.Session.Put(r.Context(),"error","invalid data!")
+		http.Redirect(w,r,"/",http.StatusSeeOther)
+	}
+
+	log.Println(startDate,endDate)
+	reservation := models.Reservation{
+		FirstName : r.Form.Get("first_name"),
+		LastName : r.Form.Get("last_name"),
+		Phone : r.Form.Get("phone"),
+		Email : r.Form.Get("email"),
+		StartDate: startDate,
+		EndDate: endDate,
+		RoomID: roomID,
+		Room: room,
+	}
+	//將session資料更新
+	
+	stringMap := make(map[string]string)
+	stringMap["start_date"] = sd
+	stringMap["end_date"] = ed
 	form := forms.New(r.PostForm)
 	//Required forms data
-	form.Required("first_name", "last_name", "phone", "email")
+	form.Required("first_name", "last_name", "email")
 	form.MinLength("first_name",3,r)
 	form.Isemail("email")
 
@@ -152,10 +178,13 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 		//先將form的內容儲存起來
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		http.Error(w,"error httpstatus for test",http.StatusSeeOther)
+		
+		m.App.Session.Put(r.Context(), "end_date", ed)
+		
 		render.Template(w, r ,"make-reservationpage.tmpl",&models.TemplateData{
 			Form: form,
 			Data: data,
+			StringMap: stringMap,
 		})
 		return
 	}
