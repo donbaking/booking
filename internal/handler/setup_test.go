@@ -127,20 +127,20 @@ func getRoutes() http.Handler {
 	mux.Post("/search-availability-json", Repo.PostAvailabilityjson)
 	mux.Post("/make-reservation",Repo.PostReservation)
 	mux.Post("/user/login",Repo.PostShowLogin)
-	mux.Get("/dashboard",Repo.AdminDashBoard)
+	mux.Get("/admin/dashboard",Repo.AdminDashBoard)
 
-	
-	mux.Get("/reservations-new",Repo.AdminNewReservation)
-	mux.Get("/reservations-all",Repo.AdminAllReservation)
-	
-	mux.Get("/reservations-calendar",Repo.AdminReservationCalendar)
-	mux.Post("/reservations-calendar",Repo.AdminPostReservationCalendar)
-	
-	mux.Get("/reservations/{src}/{id}/show",Repo.AdminShowReservation)
-	mux.Post("/reservations/{src}/{id}",Repo.AdminPostReservation)
 
-	mux.Get("/process-reservation/{src}/{id}/do",Repo.AdminProcessReservation)
-	mux.Get("/delete-reservation/{src}/{id}/do",Repo.AdminDeleteReservation)
+	mux.Get("/admin/reservations-new",Repo.AdminNewReservation)
+	mux.Get("/admin/reservations-all",Repo.AdminAllReservation)
+	
+	mux.Get("/admin/reservations-calendar",Repo.AdminReservationCalendar)
+	mux.Post("/admin/reservations-calendar",Repo.AdminPostReservationCalendar)
+	
+	mux.Get("/admin/reservations/{src}/{id}/show",Repo.AdminShowReservation)
+	mux.Post("/admin/reservations/{src}/{id}",Repo.AdminPostReservation)
+
+	mux.Get("/admin/process-reservation/{src}/{id}/do",Repo.AdminProcessReservation)
+	mux.Get("/admin/delete-reservation/{src}/{id}/do",Repo.AdminDeleteReservation)
 	//建立一個讀取靜態文件的路徑
 	fileServer := http.FileServer(http.Dir("./static/"))
 	//讓mux可以處理static裡的所有文件

@@ -27,6 +27,7 @@ var theTests = []struct{
 	method string
 	expectedStatusCode int
 }{
+
 	{"home","/","GET",http.StatusOK},
 	{"about","/about","GET",http.StatusOK},
 	{"gq","/generals-quarters","GET",http.StatusOK},
@@ -35,6 +36,14 @@ var theTests = []struct{
 	{"ct","/contact","GET",http.StatusOK},
 	{"mr","/make-reservation","GET",http.StatusOK},
 	{"non-existent","/eggs","GET",http.StatusNotFound},
+	//new routes
+	{"login","/user/login","GET",http.StatusOK},
+	{"logout","/user/logout","GET",http.StatusOK},
+	{"dashboard","/admin/dashboard","GET",http.StatusOK},
+	{"new res","/admin/reservations-new","GET",http.StatusOK},
+	{"all res","/admin/reservations-all","GET",http.StatusOK},
+	{"show res","/admin/reservations/new/1/show","GET",http.StatusOK},
+
 }
 
 
