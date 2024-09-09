@@ -51,7 +51,7 @@
                         {{$blockKey := printf "%s-%s-%02d" $curYear $curMonth (add $index 1)}}
                             <td class="text-center">
                                 {{if gt (index $reservations $blockKey) 0}}
-                                    <a href="/admin/reservations/cal/{{index $reservations $blockKey}}">
+                                    <a href="/admin/reservations/cal/{{index $reservations $blockKey}}/show?y={{$curYear}}&m={{$curMonth}}">
                                         <span class="text-danger">R</span>
                                     </a>
                                 {{else}}

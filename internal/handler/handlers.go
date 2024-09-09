@@ -552,11 +552,18 @@ func (m *Repository) AdminShowReservation(w http.ResponseWriter,r *http.Request)
 		helpers.ServerError(w,err)
 		return
 	}
+	//從url或得年月
+	year := r.URL.Query().Get("y")
+	month := r.URL.Query().Get("m")
+	log.Println(year,month)
 	//地3個元素為new或all,可以讓handler知道從哪邊導向過來的
 	src := urlstr[3]
 	stringMap := make(map[string]string)
 	stringMap["src"] = src
-
+	//將年月放進stringMap
+	stringMap["month"] = month
+	stringMap["year"] = year
+	
 	//get single reservation data from database
 	res,err := m.DB.GetReservationByID(id)
 	if err !=nil{
@@ -612,12 +619,22 @@ func (m *Repository) AdminPostReservation(w http.ResponseWriter,r *http.Request)
 		helpers.ServerError(w,err)
         return
 	}
+	//從Get request得到年月份
+	month := r.Form.Get("month")
+	year := r.Form.Get("year")
+	//session傳訊息
 	m.App.Session.Put(r.Context(),"flash","修改完成")
 	//重新導向
-	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	if year == ""{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	}else{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-calendar?y=%s&m=%s",year,month),http.StatusSeeOther)
+	}
+	
 }	
 
 
+//AdminReservationCalendar 將表格資料傳至template
 func (m *Repository) AdminReservationCalendar(w http.ResponseWriter,r *http.Request){
 	//現在時間
 	now := time.Now()
@@ -733,17 +750,51 @@ func (m *Repository)AdminPostReservationCalendar(w http.ResponseWriter,r *http.R
 	year ,_ := strconv.Atoi(r.Form.Get("y"))
 	month ,_ := strconv.Atoi(r.Form.Get("m"))
 
-	// //得到所有房間資料
-	// rooms , err := m.DB.AllRooms()
-	// if err != nil{
-	// 	helpers.ServerError(w,err)
-	// 	return
-	// }
-	// //遍歷rooms
-	// for _,x := range rooms{
-	// 	//Get the block from the session. Loop through entire map
-	// 	//
-	// }
+	//得到所有房間資料
+	rooms , err := m.DB.AllRooms()
+	if err != nil{
+		helpers.ServerError(w,err)
+		return
+	}
+	//get forms from form in templates
+	form := forms.New(r.PostForm)
+
+	//遍歷rooms
+	for _,x := range rooms{
+		//Get the block map from the session. Loop through entire map
+		//比較原本的session裡的block map 以及新的block map就可以知道在calendar裡有做了甚麼修改
+			curMap := m.App.Session.Get(r.Context(), fmt.Sprintf("block_map_%d",x.ID)).(map[string]int)
+			for name , value := range curMap{
+				//ok will be false if the value not in the map
+				if val, ok := curMap[name]; ok{
+					//value >0 , remove
+					if val >0{
+						if !form.Has(fmt.Sprintf("remove_block_%d_%s",x.ID,name),r){
+							//delete the restriction by id
+							err := m.DB.DeleteBlockByID(value)
+							if err !=nil{
+								log.Println(err)
+							}
+						}
+					}
+				}
+
+			}
+	}
+	//handle the new block
+	for name,_ := range r.PostForm{
+		//檢查template傳來的name開頭是不是add_block
+		if strings.HasPrefix(name,"add_block"){
+			//split string use _
+			exploded := strings.Split(name,"_")
+			roomID,_ := strconv.Atoi(exploded[2])
+			t,_ := time.Parse("2006-01-02",exploded[3])
+			//insert a new block
+			err := m.DB.InsertBlockForRoom(roomID,t)
+			if err != nil{
+				log.Println(err)
+			}
+	}
 
 	//session
 	m.App.Session.Put(r.Context(),"flash","修改已保存")
@@ -751,6 +802,7 @@ func (m *Repository)AdminPostReservationCalendar(w http.ResponseWriter,r *http.R
 	//重新導向
 	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-calendar?y=%d&m=%d",year,month),http.StatusSeeOther)
 
+}
 }
 
 
@@ -764,10 +816,21 @@ func (m *Repository) AdminProcessReservation(w http.ResponseWriter,r *http.Reque
 		helpers.ServerError(w,err)
 		return 
 	}
+
+	//從URL取year and month
+	year := r.URL.Query().Get("y")
+	month := r.URL.Query().Get("m")
+	
+
 	m.App.Session.Put(r.Context(),"flash","預約已確認")
-	log.Printf("/admin/reservations-%s",src)
+	
 	//重新導向
-	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	if year ==""{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	}else{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-calendar?y=%s&m=%s",year,month),http.StatusSeeOther)
+	}
+	
 }
 
 //AdminDeleteReservation 刪除一個預約
@@ -780,10 +843,19 @@ func (m *Repository) AdminDeleteReservation(w http.ResponseWriter,r *http.Reques
 		helpers.ServerError(w,err)
 		return 
 	}
+	//從URL取year and month
+	year := r.URL.Query().Get("y")
+	month := r.URL.Query().Get("m")
+
+
 	//刪除預約之後在room-restrictioos table也會刪除因為在foreign key設定為cascaded
 	//參考資料:https://www.tsnien.idv.tw/MySQL_WebBook/chap12/12-1%20%E7%B4%9A%E8%81%AF%20Cascade%20%E7%B0%A1%E4%BB%8B.html
 	m.App.Session.Put(r.Context(),"flash","預約已刪除")
 	log.Printf("/admin/reservations-%s",src)
 	//重新導向
-	http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	if year ==""{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-%s",src),http.StatusSeeOther)
+	}else{
+		http.Redirect(w,r,fmt.Sprintf("/admin/reservations-calendar?y=%s&m=%s",year,month),http.StatusSeeOther)
+	}
 }

@@ -21,8 +21,13 @@
         class=""
         novalidate
       >
+        
+      
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-       
+        <input type="hidden" name="year" value="{{index .StringMap "year"}}" />
+        <input type="hidden" name="month" value="{{index .StringMap "month"}}" />
+        <p>Year: {{index .StringMap "year"}}</p>
+        <p>Month: {{index .StringMap "month"}}</p>
         <div class="form-group mt-3">
           <label for="first_name">名:</label>
           {{with .Form.Errors.Get "first_name"}}
@@ -72,7 +77,9 @@
           {{else}}
             <a href="/admin/reservations-{{$src}}" class="btn btn-warning">取消</a>
           {{end}}
+          {{if eq $res.Processed 0}}
           <a href="#!" class="btn btn-info" onclick="processRes({{$res.ID}})">已處理</a>
+          {{end}}
         </div>
         <div class="float-end">
           <a href="#!" class="btn btn-danger" onclick="deleteRes({{$res.ID}})">刪除預約</a>
@@ -84,6 +91,7 @@
 
 {{define "js"}}
 {{$src := index .StringMap "src"}}
+
 <script>
   function processRes(id){
     //跳出提示
@@ -92,7 +100,9 @@
       msg : "確定要確認預約嗎?",
       callback : function(result){
         if (result !==false){
-          window.location.href = "/admin/process-reservation/{{$src}}/" + id
+          window.location.href = "/admin/process-reservation/{{$src}}/" 
+          + id
+          +"/do?y={{index .StringMap "year"}}&m={{index .StringMap "month"}}";
         }
       }
     })
@@ -101,10 +111,12 @@
     //跳出提示
     attention.custom({
       icon : "warning",
-      msg : "確定要確認預約嗎?",
+      msg : "確定要刪除預約嗎?",
       callback : function(result){
         if (result !==false){
-          window.location.href = "/admin/delete-reservation/{{$src}}/" + id
+          window.location.href = "/admin/delete-reservation/{{$src}}/" 
+          + id
+          +"/do?y={{index .StringMap "year"}}&m={{index .StringMap "month"}}";
         }
       }
     })
