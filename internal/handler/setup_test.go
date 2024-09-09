@@ -24,7 +24,12 @@ import (
 var app config.AppConfig
 var session *scs.SessionManager
 var pathToTemplates ="./../../templates"
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"humanDate" : render.HumanDate,
+	"formatDate" :render.FormatDate,
+	"iterate":render.Iterate,
+	"add":render.Add,
+}
 
 func TestMain(m *testing.M){
 	//put something in the session
@@ -113,11 +118,29 @@ func getRoutes() http.Handler {
 	mux.Get("/search-availability", Repo.Availability)
 	mux.Get("/contact", Repo.Contact)
 	mux.Get("/reservation-summary", Repo.ReservationSummary)
+	mux.Get("/choose-room{id}",Repo.ChooseRoom)
+	mux.Get("/book-room",Repo.BookRoom)
+	mux.Get("/user/login",Repo.ShowLogin)
+	mux.Get("/user/logout",Repo.Logout)
 	//處理POST request
-	mux.Post("/search-availability", Repo.PostAvailability)
+	mux.Post("/search-availability",Repo.PostAvailability)
 	mux.Post("/search-availability-json", Repo.PostAvailabilityjson)
 	mux.Post("/make-reservation",Repo.PostReservation)
+	mux.Post("/user/login",Repo.PostShowLogin)
+	mux.Get("/dashboard",Repo.AdminDashBoard)
 
+	
+	mux.Get("/reservations-new",Repo.AdminNewReservation)
+	mux.Get("/reservations-all",Repo.AdminAllReservation)
+	
+	mux.Get("/reservations-calendar",Repo.AdminReservationCalendar)
+	mux.Post("/reservations-calendar",Repo.AdminPostReservationCalendar)
+	
+	mux.Get("/reservations/{src}/{id}/show",Repo.AdminShowReservation)
+	mux.Post("/reservations/{src}/{id}",Repo.AdminPostReservation)
+
+	mux.Get("/process-reservation/{src}/{id}/do",Repo.AdminProcessReservation)
+	mux.Get("/delete-reservation/{src}/{id}/do",Repo.AdminDeleteReservation)
 	//建立一個讀取靜態文件的路徑
 	fileServer := http.FileServer(http.Dir("./static/"))
 	//讓mux可以處理static裡的所有文件

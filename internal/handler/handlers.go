@@ -83,7 +83,7 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	if !ok {
 		//在session中記錄錯誤訊息，並將用戶導回其他頁面
 		m.App.Session.Put(r.Context(),"error","Cann't get reservation from session")
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 	//從database撈房間資料
@@ -91,7 +91,7 @@ func (m *Repository) Reservation(w http.ResponseWriter,r *http.Request){
 	if err !=nil{
 		//在session中記錄錯誤訊息，並將用戶導回其他頁面
 		m.App.Session.Put(r.Context(),"error","Can't find room in SQL")
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 	res.Room.RoomName = room.RoomName
@@ -124,7 +124,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	if err != nil{
 		//helpers 處理server error並重新導向
 		m.App.Session.Put(r.Context(),"error","Can't parse form!")
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 
@@ -192,7 +192,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	newReservationID,err := m.DB.InsertReservation(reservation)
 	if err != nil{
 		m.App.Session.Put(r.Context(),"error","Can't insert reservation into database")
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 	fmt.Printf("insert newreservation success")
@@ -208,7 +208,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter,r *http.Request){
 	err = m.DB.InsertRoomRestriction(restriction)
 	if err != nil{
 		m.App.Session.Put(r.Context(),"error","Can't insert roomrestriction into database")
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 	
@@ -402,7 +402,7 @@ func(m *Repository) ReservationSummary(w http.ResponseWriter,r *http.Request){
 		//用seesion傳遞錯誤訊息
 		m.App.Session.Put(r.Context(),"error","Can't get reservation from session")
 		//將用戶Redirect至首頁
-		http.Redirect(w,r,"/",http.StatusTemporaryRedirect)
+		http.Redirect(w,r,"/",http.StatusSeeOther)
 		return
 	}
 	//將post傳來的資料從session中釋放

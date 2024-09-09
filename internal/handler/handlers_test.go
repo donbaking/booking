@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -33,25 +34,20 @@ var theTests = []struct{
 	{"sa","/search-availability","GET",http.StatusOK},
 	{"ct","/contact","GET",http.StatusOK},
 	{"mr","/make-reservation","GET",http.StatusOK},
-	// {"post-sa","/search-availability","POST",[]postData{
-	// 	{key:"start",value:"2024-08-24"},
-	// 	{key:"end",value:"2024-08-25"},
-	// },http.StatusOK},
-	// {"post-sa-json","/search-availability-json","POST",[]postData{
-	// 	{key:"start",value:"2024-08-24"},
-	// 	{key:"end",value:"2024-08-25"},
-	// },http.StatusOK},
-	// {"post-mr","/make-reservation","POST",[]postData{
-	// 	{key:"first_name",value:"John"},
-	// 	{key:"last_name",value:"smith"},
-	// 	{key:"email_name",value:"smith@gamil.com"},
-	// 	{key:"phone",value:"098888888888"},
-	// },http.StatusOK},
+	{"non-existent","/eggs","GET",http.StatusNotFound},
 }
 
 
 //Testhandlers 
 func TestHandlers(t *testing.T){
+	//put all modle into the session
+	gob.Register(models.Reservation{})
+	gob.Register(models.User{})
+	gob.Register(models.Room{})
+	gob.Register(models.RoomRestriction{})
+	gob.Register(models.Restriction{})
+	gob.Register(map[string]int{})
+	
 	routes := getRoutes()
 	//create Web server to response the status code
 	//and cilent to send the request
@@ -121,8 +117,8 @@ func TestRepository_PostReservation(t *testing.T){
 	rr = httptest.NewRecorder()
 	handler.ServeHTTP(rr,req)
 	//驗證status code
-	if rr.Code != http.StatusTemporaryRedirect{
-		t.Errorf("Reservation handler在解析表單時錯誤但沒有redrict,回傳值 %d, 預期為 %d", rr.Code, http.StatusTemporaryRedirect)
+	if rr.Code != http.StatusSeeOther{
+		t.Errorf("Reservation handler在解析表單時錯誤但沒有redrict,回傳值 %d, 預期為 %d", rr.Code, http.StatusSeeOther)
 	}
 
 	//TestCase 3:表單內容錯誤
@@ -181,8 +177,8 @@ func TestRepository_Reservation(t *testing.T){
 	rr = httptest.NewRecorder()
 	handler.ServeHTTP(rr,req)
 	//檢查rr狀態是不是redirect
-	if rr.Code != http.StatusTemporaryRedirect{
-		t.Errorf("Reservation handler 回傳錯誤狀態:回傳值 %d,預期為 %d",rr.Code,http.StatusTemporaryRedirect)
+	if rr.Code != http.StatusSeeOther{
+		t.Errorf("Reservation handler 回傳錯誤狀態:回傳值 %d,預期為 %d",rr.Code,http.StatusSeeOther)
 	}
 
 	//test case room id is not found
@@ -195,8 +191,8 @@ func TestRepository_Reservation(t *testing.T){
 	
 	handler.ServeHTTP(rr,req)
 	//檢查rr狀態是不是redirect
-	if rr.Code != http.StatusTemporaryRedirect{
-		t.Errorf("Reservation handler 回傳錯誤狀態:回傳值 %d,預期為 %d",rr.Code,http.StatusTemporaryRedirect)
+	if rr.Code != http.StatusSeeOther{
+		t.Errorf("Reservation handler 回傳錯誤狀態:回傳值 %d,預期為 %d",rr.Code,http.StatusSeeOther)
 	}
 }
 
