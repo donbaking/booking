@@ -1,0 +1,8 @@
+development:
+  dialect: postgres
+  database: bookings
+  user: postgres
+  password: donba101
+  host: localhost
+  pool: 5
+  port: 5432

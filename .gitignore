@@ -1,5 +1,4 @@
 run.sh
-database.yml
 bookings
 handles_test1.go
 setup_test1
