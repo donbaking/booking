@@ -8,3 +8,5 @@
 - 使用 [nosurf](github.com/justinas/nosurf) library 處理 CSRF 攻擊
 - 使用 [govalidator](github.com/asaskevich/govalidator) 處理表單輸入的驗證
 - 使用 [PostgreSQL](https://www.postgresql.org/) 做為後端資料庫
+- 將服務架設於[AWS EC2](https://aws.amazon.com/tw/ec2/) 
+- 使用[Caddy](https://caddyserver.com/)做為網頁伺服器
