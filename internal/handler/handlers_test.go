@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -240,6 +241,86 @@ func TestRepository_PostAvailabilityJson(t *testing.T){
 		t.Error("failed to parse json")
 	}
 }
+//table-driven test postshowlogin
+var loginTests =[]struct{
+	name string
+	email string 
+	password string
+	expectedStatusCode int
+	expectedHTML string
+	expectedLocation string
+}{
+	//Test case 1
+	{"成功登入",
+	"hsieh@test.com",
+	"password",
+	http.StatusSeeOther,
+	"",
+	"/",
+    },
+	//Test case 2 password failed
+	{"登入失敗",
+	"hsieh@test.com",
+	"aaaaaaa",
+	http.StatusSeeOther,
+	"",
+	"/user/login",
+	},
+	//test case 3 表單資料不齊全
+	{"表單資料不齊全",
+	"aaa",
+	"",
+	http.StatusOK,
+	`action="/user/login"`,
+	"",
+	},
+}
+func TestLogin(t *testing.T){
+	//遍歷所有login test
+	for _, e := range loginTests{
+		//製作postdata
+		postedData := url.Values{}
+		postedData.Add("email",e.email)
+		postedData.Add("password",e.password)
+		//create a new request然後將post的data編碼船過去
+		req,_:= http.NewRequest("POST","/user/login",strings.NewReader(postedData.Encode()))
+		ctx := getCtx(req)
+		req = req.WithContext(ctx)
+		//set the header
+		req.Header.Set("Content-Type","application/x-www-form-urlencoded")
+		//建立serverrecorde
+		rr := httptest.NewRecorder()
+		//call handler
+		handler := http.HandlerFunc(Repo.PostShowLogin)
+		//make request to handler
+		handler.ServeHTTP(rr,req)
+		//檢查statuscode
+		if rr.Code != e.expectedStatusCode{
+			t.Errorf("failed %s:expected code %d,but got %d",e.name,e.expectedStatusCode,rr.Code)
+		}
+		//檢查期望的redirect
+		if e.expectedLocation !="" {
+			//get the url from test
+			testlocation,_ := rr.Result().Location()
+			if testlocation.String() != e.expectedLocation {
+				t.Errorf("failed %s:expected location %s,but got location%s",e.name,e.expectedLocation,testlocation)
+			}
+		}
+		//檢查期望的HTML
+		if e.expectedHTML!=""{
+			//read rr body 得到html
+			testhtml := rr.Body.String()
+			if !strings.Contains(testhtml,e.expectedHTML){
+				t.Errorf("failed %s expected html %s,but did not found",e.name,e.expectedHTML)
+			}
+		}
+	}
+}
+
+
+
+
+
 
 // getCtx 函數用來從 session 中載入上下文 (context)。
 // 它接受一個 HTTP 請求，並嘗試使用 session.Load 方法來載入請求的上下文。

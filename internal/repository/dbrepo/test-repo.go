@@ -42,6 +42,15 @@ func (m *testDBRepo) SearchAvailabilityByDatesByRoomID(start,end time.Time,roomI
 //SearchAvailabilityForAllRooms returns a slice of available rooms,如果在時間內可以預約的話會return可以被預約的房間
 func (m *testDBRepo) SearchAvailabilityForAllRooms(start,end time.Time) ([]models.Room,error){
 	var rooms []models.Room
+	expectedStart , _ := time.Parse("2006-01-02","2050-01-01")
+	expectedEnd , _ := time.Parse("2006-01-02","2050-01-02")
+	if start ==expectedStart && end ==expectedEnd{
+		rooms = []models.Room{
+			{ID: 1,RoomName: "aaa",CreatedAt: time.Now(),UpdatedAt: time.Now()},
+			{ID: 2,RoomName: "bbb",CreatedAt: time.Now(),UpdatedAt: time.Now()},
+		}
+		return rooms,nil
+	}
 	return rooms,nil 
 }
 
@@ -79,7 +88,10 @@ func (m *testDBRepo) DeleteReservation(id int) error{
 }
 
 func (m *testDBRepo) Authenticate(email,testPassword string) (int,string,error){
-	return 0,"",nil
+	if testPassword =="password"&&email == "hsieh@test.com"{
+		return 1,"",nil
+	}
+	return 0,"",errors.New("error")
 }
 //AllReservations returns allreservations that user has maked
 func (m* testDBRepo) AllReservations()([]models.Reservation,error){

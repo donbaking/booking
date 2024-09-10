@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/gob"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -65,12 +66,32 @@ func run()( *driver.DB , error){
 	gob.Register(models.RoomRestriction{})
 	gob.Register(models.Restriction{})
 	gob.Register(map[string]int{})
+	//可以用command line
+	inproduction := flag.Bool("production",true,"Application is in production")
+	useCache := flag.Bool("cache",true,"Use the template cache")
+	dbHost := flag.String("dbhost","localhost","Database host")
+	dbName := flag.String("dbname","","Database name")
+	dbUser := flag.String("dbuser","","Database user")
+	dbPass := flag.String("dbpass","donba101","Database password")
+	dbPort := flag.String("dbport","5432","Database port")
+	dbSSL := flag.String("dbssl","disable","Database ssl setting(disable, prefer, require)")
+
+	flag.Parse()
+	//檢查必要的flag
+	if *dbName==""|| *dbUser=="" {
+		fmt.Println("缺少必要flag")
+		os.Exit(1)
+	}
+
+	//連接database用的string
+	connectionString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=%s",*dbHost,*dbPort,*dbName,*dbUser,*dbPass,*dbSSL)
 	//創建一個email使用的channle
 	mailChan := make(chan models.MailData)
 	app.MailChan = mailChan
 
 	//如果結束開發要進行商業部屬時這個變數改變為true
-	app.Inproduction = false
+	app.Inproduction = *inproduction
+	app.UseCache = *useCache
 
 	//information日誌 print在終端
 	infoLog = log.New(os.Stdout,"INFO\t",log.Ldate|log.Ltime)
@@ -96,7 +117,8 @@ func run()( *driver.DB , error){
 
 	//connect to database
 	log.Println("try to connect to database")
-	db ,err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=donba101")
+	db ,err := driver.ConnectSQL(connectionString)
+	//db ,err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=donba101")
 	if err != nil{
 		log.Fatal("fail to connected the database")
 		return nil,err
@@ -112,8 +134,6 @@ func run()( *driver.DB , error){
     }
 	//將tc存放在appstruct裡的TemplateCache
 	app.TemplateCache = tc
-	//將UseCache預設為false
-	app.UseCache = false
 	//將app以pointer形式傳入handlers裡的newrepo
 	repo := handler.NewRepo(&app,db)
 	//傳回將repo傳回NewRepo func

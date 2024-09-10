@@ -275,7 +275,7 @@ func (m *Repository) PostAvailability(w http.ResponseWriter,r *http.Request){
 	//接收從表單傳來的兩個數值,by search-availability two inputs,接收的資料型態為字串
 	start:= r.Form.Get(("start"))
 	end:= r.Form.Get(("end"))
-	
+	log.Printf("Received start date:%s,end date:%s",start,end)
 	layout := "2006-01-02"
 	startDate , err := time.Parse(layout,start)
 	if err != nil{
