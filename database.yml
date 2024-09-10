@@ -2,7 +2,7 @@ development:
   dialect: postgres
   database: bookings
   user: postgres
-  password: donba101
+  password: 
   host: localhost
   pool: 5
   port: 5432
