@@ -10,3 +10,4 @@
 - 使用 [PostgreSQL](https://www.postgresql.org/) 做為後端資料庫
 - 將服務架設於[AWS EC2](https://aws.amazon.com/tw/ec2/) 
 - 使用[Caddy](https://caddyserver.com/)做為網頁伺服器
+- [專案連結] (https://ec2-3-24-124-54.ap-southeast-2.compute.amazonaws.com)
