@@ -1,14 +1,29 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    min-height: calc(100vh - 100px); /* 調整此數值根據實際的navbar和footer的總高度 */
+    display: flex;
+    flex-direction: column;
+}
+
 .my-footer {
-    
     background-color: #163b65;
-    margin-top: 1.5em;
+    margin-top: auto; /* 讓 footer 在內容後自動推下去 */
     padding: 1em;
     color: white;
     font-size: 80%;
+    position: relative; /* 確保它跟隨頁面佈局 */
+    bottom: 0;
+    width: 100%;
+    text-align: center; /* 可以根據需要設定文字居中 */
 }
 
 .room-image {
-    max-width: 50%;
+    max-width: 80%;
 }
 
 .datepicker {
